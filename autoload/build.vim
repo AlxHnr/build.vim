@@ -116,21 +116,29 @@ endif
 " Resolve content in 's:language_fallback_commands'.
 let s:language_commands = {}
 for [ languages, table ] in items(s:language_fallback_commands)
-  " Resolve inheritance.
   let s:inherited_languages = {}
   let s:body = {}
+
+  " Resolve inheritance.
   if has_key(table, 'inherit')
     for language in split(table.inherit, ',')
       if has_key(s:inherited_languages, language)
         echoerr "fatal: '" . languages . "' tries to inherit from "
           \ . language . " multiple times."
+        finish
       endif
       let s:inherited_languages[language] = 1
 
       " Copy content from inherited languages into body.
-      for [ entry_name, content ] in items(table)
-        let s:body[entry_name] = content
-      endfor
+      if has_key(s:language_commands, language)
+        for [ entry_name, content ] in items(s:language_commands[language])
+          let s:body[entry_name] = content
+        endfor
+      else
+        echoerr "fatal: '" . languages . "' can't inherit from"
+          \ . " unresolved language '" . language . "'."
+        finish
+      endif
     endfor
   endif
 
