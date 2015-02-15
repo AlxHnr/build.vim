@@ -30,8 +30,6 @@ let s:build_systems =
   \     'target-args':
   \     {
   \       'build' : 'all',
-  \       'clean' : 'clean',
-  \       'run'   : 'run',
   \     }
   \   },
   \   'CMake':
@@ -42,25 +40,16 @@ let s:build_systems =
   \     'target-args':
   \     {
   \       'build' : 'all',
-  \       'clean' : 'clean',
-  \       'run'   : 'run',
   \     }
   \   },
   \   'dub':
   \   {
   \     'file'    : 'dub.json',
   \     'command' : 'dub',
-  \     'target-args':
-  \     {
-  \       'build' : 'build',
-  \       'clean' : 'clean',
-  \       'run'   : 'run',
-  \     }
   \   },
   \ }
 " }}}
 
-" Resolve inheritance.
 " Fallback build commands for specific languages. {{{
 let s:language_fallback_commands =
   \ {
@@ -156,7 +145,7 @@ for [ languages, table ] in items(s:language_fallback_commands)
 endfor
 " }}}
 
-function! s:setup_variables() " {{{
+function! build#setup() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
     return
@@ -171,6 +160,10 @@ function! s:setup_variables() " {{{
         if filereadable(l:current_path . '/' . l:build_file)
           let b:build_path = l:current_path
           let b:build_system_name = l:build_name
+
+          if exists('g:build#autochdir') && g:build#autochdir
+            execute 'lchdir! ' . escape(b:build_path, '\ ')
+          endif
           return
         endif
       endfor
