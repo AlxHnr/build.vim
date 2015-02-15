@@ -25,7 +25,7 @@ let s:build_systems =
   \ {
   \   'make':
   \   {
-  \     'file'    : '[Mm]akefile',
+  \     'file'    : 'Makefile,makefile',
   \     'command' : 'make',
   \     'target-args':
   \     {
@@ -38,9 +38,9 @@ let s:build_systems =
   \   {
   \     'file'    : 'CMakeLists.txt',
   \     'command' : 'cmake',
+  \     'init'    : '!call s:cmake_init()',
   \     'target-args':
   \     {
-  \       'init'  : '!call s:cmake_init()',
   \       'build' : 'all',
   \       'clean' : 'clean',
   \       'run'   : 'run',
@@ -60,6 +60,7 @@ let s:build_systems =
   \ }
 " }}}
 
+" Resolve inheritance.
 " Fallback build commands for specific languages. {{{
 let s:language_fallback_commands =
   \ {
@@ -113,7 +114,7 @@ if exists('g:is_chicken')
 endif
 " }}}
 
-" Resolve content in 's:language_fallback_commands'.
+" Resolve content in 's:language_fallback_commands'. {{{
 let s:language_commands = {}
 for [ languages, table ] in items(s:language_fallback_commands)
   let s:inherited_languages = {}
@@ -153,3 +154,44 @@ for [ languages, table ] in items(s:language_fallback_commands)
     let s:language_commands[language] = s:body
   endfor
 endfor
+" }}}
+
+function! s:setup_variables() " {{{
+  let l:current_path = expand('%:p')
+  if !strlen(l:current_path)
+    return
+  endif
+
+  " Search all directories from the current files pwd upwards for known
+  " build files.
+  while l:current_path !~ '\v^(\/|\.)$'
+    let l:current_path = fnamemodify(l:current_path, ':h')
+    for l:build_name in keys(s:build_systems)
+      for l:build_file in split(s:build_systems[l:build_name].file, ',')
+        if filereadable(l:current_path . '/' . l:build_file)
+          let b:build_path = l:current_path
+          let b:build_system_name = l:build_name
+          return
+        endif
+      endfor
+    endfor
+  endwhile
+
+  unlet! b:build_path
+  unlet! b:build_system_name
+endfunction " }}}
+
+function! build#target(name) " {{{
+  if !exists('b:build_path')
+    call s:setup_variables()
+  endif
+
+  if exists('b:build_path')
+    if has_key(s:build_systems[b:build_system_name], 'init') &&
+      \ !exists(b:build_initialized)
+
+    endif
+    execute 'lchdir! ' . escape(b:build_path, '\ ')
+    lchdir! -
+  endif
+endfunction " }}}
