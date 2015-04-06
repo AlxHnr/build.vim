@@ -30,17 +30,20 @@ let s:build_systems =
   \     'target-args':
   \     {
   \       'build' : 'all',
-  \     }
+  \     },
   \   },
   \   'CMake':
   \   {
   \     'file'    : 'CMakeLists.txt',
   \     'command' : 'cmake',
-  \     'init'    : '!call s:cmake_init()',
   \     'target-args':
   \     {
   \       'build' : 'all',
-  \     }
+  \     },
+  \     'target-flags':
+  \     {
+  \       'clean' : 'uninit',
+  \     },
   \   },
   \   'dub':
   \   {
@@ -90,7 +93,7 @@ let s:language_fallback_commands =
   \   },
   \   'sh,lua,python':
   \   {
-  \     'run' : 'chmod +x "%FILE%" && ./"%FILE%"'
+  \     'run' : 'chmod +x "%FILE%" && ./"%FILE%"',
   \   },
   \ }
 
@@ -160,6 +163,7 @@ function! build#setup() " {{{
         if filereadable(l:current_path . '/' . l:build_file)
           let b:build_path = l:current_path
           let b:build_system_name = l:build_name
+          let &l:makeprg = s:build_systems[l:build_name].command
 
           if exists('g:build#autochdir') && g:build#autochdir
             execute 'lchdir! ' . escape(b:build_path, '\ ')
@@ -175,16 +179,20 @@ function! build#setup() " {{{
 endfunction " }}}
 
 function! build#target(name) " {{{
-  if !exists('b:build_path')
-    call s:setup_variables()
-  endif
-
   if exists('b:build_path')
-    if has_key(s:build_systems[b:build_system_name], 'init') &&
-      \ !exists(b:build_initialized)
+    let l:build_info = s:build_systems[b:build_system_name]
 
+    " Determine arguments for the current build target.
+    if has_key(l:build_info, 'target-args')
+      \ && has_key(l:build_info['target-args'], a:name)
+      let l:target_args = l:build_info['target-args'][a:name]
+    else
+      let l:target_args = a:name
     endif
+
+    " Handle the build target in the build directory.
     execute 'lchdir! ' . escape(b:build_path, '\ ')
+    execute 'lmake! ' . l:target_args
     lchdir! -
   endif
 endfunction " }}}
