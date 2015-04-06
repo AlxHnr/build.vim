@@ -40,10 +40,6 @@ let s:build_systems =
   \     {
   \       'build' : 'all',
   \     },
-  \     'target-flags':
-  \     {
-  \       'clean' : 'uninit',
-  \     },
   \   },
   \   'dub':
   \   {
@@ -58,51 +54,49 @@ let s:language_fallback_commands =
   \ {
   \   'c':
   \   {
-  \     'clean' : 'rm "%OUTPUT%"',
-  \     'build' : 'gcc -std=c11 -Wall -Wextra "%FILE%" -o "%OUTPUT%"',
-  \     'run'   : './"%OUTPUT%"',
+  \     'clean' : 'rm "%HEAD%"',
+  \     'build' : 'gcc -std=c11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
+  \     'run'   : './"%HEAD%"',
   \   },
   \   'cpp':
   \   {
-  \     'inherit' : 'c',
-  \     'build'   : 'g++ -std=c++11 -Wall -Wextra "%FILE%" -o "%OUTPUT%"',
+  \     '@inherit' : 'c',
+  \     'build'    : 'g++ -std=c++11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
   \   },
   \   'd':
   \   {
-  \     'clean' : 'rm "%OUTPUT%" "%OUTPUT%.o"',
-  \     'build' : 'dmd "%FILE%"',
-  \     'run'   : './"%OUTPUT%"',
+  \     'clean' : 'rm "%HEAD%" "%HEAD%.o"',
+  \     'build' : 'dmd "%NAME%"',
+  \     'run'   : './"%HEAD%"',
   \   },
   \   'java':
   \   {
-  \     'clean'  : 'rm "%OUTPUT%"',
-  \     'build'  : 'javac -Xlint "%FILE%"',
-  \     'run'    : 'java "%RAW_OUT%"',
-  \     'output' : '%OUTPUT%.class',
+  \     'clean'  : 'rm "%HEAD%.class"',
+  \     'build'  : 'javac -Xlint "%NAME%"',
+  \     'run'    : 'java "%HEAD%"',
   \   },
   \   'tex':
   \   {
-  \     'clean'  : 'rm "%RAW_OUT%".{aux,log,nav,out,pdf,snm,toc}',
-  \     'build'  : 'pdflatex -file-line-error -halt-on-error "%FILE%"',
-  \     'run'    : 'xdg-open "%OUTPUT%"',
-  \     'output' : '%OUTPUT%.pdf',
+  \     'clean'  : 'rm "%HEAD%".{aux,log,nav,out,pdf,snm,toc}',
+  \     'build'  : 'pdflatex -file-line-error -halt-on-error "%NAME%"',
+  \     'run'    : 'xdg-open "%HEAD%.pdf"',
   \   },
   \   'ocaml':
   \   {
-  \     'run' : 'ocaml "%FILE%"',
+  \     'run' : 'ocaml "%NAME%"',
   \   },
   \   'sh,lua,python':
   \   {
-  \     'run' : 'chmod +x "%FILE%" && ./"%FILE%"',
+  \     'run' : 'chmod +x "%NAME%" && ./"%NAME%"',
   \   },
   \ }
 
 if exists('g:is_chicken')
   let s:language_fallback_commands.scheme =
-  \ {
-  \   'inherit' : 'c',
-  \   'build' : 'csc -O3 "%FILE%" -o "%OUTPUT%"',
-  \ }
+    \ {
+    \   '@inherit' : 'c',
+    \   'build'    : 'csc -O3 "%NAME%" -o "%HEAD%"',
+    \ }
 endif
 " }}}
 
@@ -113,8 +107,8 @@ for [ languages, table ] in items(s:language_fallback_commands)
   let s:body = {}
 
   " Resolve inheritance.
-  if has_key(table, 'inherit')
-    for language in split(table.inherit, ',')
+  if has_key(table, '@inherit')
+    for language in split(table['@inherit'], ',')
       if has_key(s:inherited_languages, language)
         echoerr "fatal: '" . languages . "' tries to inherit from "
           \ . language . " multiple times."
@@ -137,7 +131,7 @@ for [ languages, table ] in items(s:language_fallback_commands)
 
   " Overwrite inherited items with language specific values.
   for [ entry_name, content ] in items(table)
-    if entry_name != 'inherit'
+    if entry_name != '@inherit'
       let s:body[entry_name] = content
     endif
   endfor
@@ -148,6 +142,7 @@ for [ languages, table ] in items(s:language_fallback_commands)
 endfor
 " }}}
 
+" Setups variables, makeprg and changes the current directory.
 function! build#setup() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
@@ -194,5 +189,20 @@ function! build#target(name) " {{{
     execute 'lchdir! ' . escape(b:build_path, '\ ')
     execute 'lmake! ' . l:target_args
     lchdir! -
+  elseif a:name != '@inherit' && has_key(s:language_commands, &filetype)
+    \ && has_key(s:language_commands[&filetype], a:name)
+
+    " Substitute all placeholders.
+    let l:cmd = s:language_commands[&filetype][a:name]
+    let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
+    let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
+    let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
+
+    let l:old_makeprg = &l:makeprg
+    let &l:makeprg = l:cmd
+    execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
+    lmake!
+    lchdir! -
+    let &l:makeprg = l:old_makeprg
   endif
 endfunction " }}}
