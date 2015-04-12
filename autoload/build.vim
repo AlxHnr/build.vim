@@ -189,6 +189,8 @@ function! build#target(name) " {{{
     execute 'lchdir! ' . escape(b:build_path, '\ ')
     execute 'lmake! ' . l:target_args
     lchdir! -
+  elseif !strlen(expand('%:t'))
+    echo 'build.vim: the current file has no name'
   elseif a:name != '@inherit' && has_key(s:language_commands, &filetype)
     \ && has_key(s:language_commands[&filetype], a:name)
 
@@ -204,5 +206,7 @@ function! build#target(name) " {{{
     lmake!
     lchdir! -
     let &l:makeprg = l:old_makeprg
+  else
+    echo 'Unable to ' . a:name . " '" . expand('%:t') . "'"
   endif
 endfunction " }}}
