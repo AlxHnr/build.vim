@@ -30,7 +30,7 @@ Build.vim provides the following functions:
 This function will search for build files from the current files directory
 and setup some variables. Usually you don't need to call this manually. It
 will change the current buffers working directory path, if
-[g:build#autochdir](#g-build-autochdir) is set.
+[g:build#autochdir](#gbuildautochdir) is set.
 
 ### build#target()
 
