@@ -6,7 +6,17 @@ current buffers path upwards.
 
 ## Configuration
 
-This plugin does not map any keys by default. Here are some example
+By default it should work out of the box, but there are a few options to
+configure this plugin.
+
+### g:build#autochdir
+
+If this variable is set and equals to 1, the working directory path of the
+current buffer will be changed to the path of the build file.
+
+### Mappings
+
+This plugin does not map any keys by default. But here are some example
 mappings, which build a specific target after saving all files:
 
 ```vim
@@ -15,11 +25,6 @@ nnoremap <silent> <F3> :wall<CR>:call build#target('build')<CR>
 nnoremap <silent> <F4> :wall<CR>:call build#target('run')<CR>
 nnoremap <silent> <F9> :wall<CR>:call build#target('test')<CR>
 ```
-
-### g:build#autochdir
-
-If this variable is set and equals to 1, the working directory path of the
-current buffer will be changed to the path of the build file.
 
 ## Provided functions
 
