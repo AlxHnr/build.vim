@@ -27,5 +27,5 @@ let g:loaded_build = 1
 
 augroup build
   autocmd!
-  autocmd BufNewFile,BufRead,FileType * call build#setup()
+  autocmd BufNewFile,BufRead * call build#setup()
 augroup END
