@@ -3,7 +3,7 @@
 CONTENTS                                                         *build-contents*
 
   1. Description..............................................|build-description|
-  2. Commands....................................................|build-commands|
+  2. Functions..................................................|build-functions|
     2.1 Setup variables and makeprg.................................|build#setup|
     2.2 Build the given target.....................................|build#target|
   3. Options......................................................|build-options|
@@ -27,7 +27,7 @@ current buffer:
 *b:build_path* contains the full path to the directory of the build file.
 
 ===============================================================================
-2. Commands                                                      *build-commands*
+2. Functions                                                    *build-functions*
 
 -------------------------------------------------------------------------------
 2.1 Setup variables and makeprg                                     *build#setup*
