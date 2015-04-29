@@ -95,8 +95,8 @@ endfor
 " }}}
 
 " Gets the value associated with 'key' for the given build system. It
-" checks g:build#systems first, then seaches the item in the fallback build
-" system dict.
+" checks g:build#systems first, then searches the item in the fallback
+" build system dict.
 function! s:get_buildsys_item(bs_name, key) " {{{
   if exists('g:build#systems') && has_key(g:build#systems, a:bs_name)
     \ && has_key(g:build#systems[a:bs_name], a:key)
@@ -126,6 +126,31 @@ function! s:get_target_args(target) " {{{
   else
     return a:target
   endif
+endfunction " }}}
+
+" Return true, if the given dict contains the specified build target for
+" the current file type.
+function! s:has_lang_target(cmd_dict, target) " {{{
+  return has_key(a:cmd_dict, &filetype)
+    \ && has_key(a:cmd_dict[&filetype], a:target)
+endfunction " }}}
+
+" Builds the target for the current file with rules from the given dict.
+" This function expects a valid dict with all entries needed to build the
+" current file.
+function! s:build_lang_target(cmd_dict, target) " {{{
+  " Substitute all placeholders.
+  let l:cmd = a:cmd_dict[&filetype][a:target]
+  let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
+  let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
+  let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
+
+  let l:old_makeprg = &l:makeprg
+  let &l:makeprg = l:cmd
+  execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
+  lmake!
+  lchdir! -
+  let &l:makeprg = l:old_makeprg
 endfunction " }}}
 
 " Setups variables, makeprg and changes the current directory.
@@ -166,6 +191,8 @@ function! build#setup() " {{{
   unlet! b:build_system_name
 endfunction " }}}
 
+" Try to build the given target for the current file. If the current file
+" does not belong to any project, it tries to build the file itself.
 function! build#target(target) " {{{
   if exists('b:build_path')
     execute 'lchdir! ' . escape(b:build_path, '\ ')
@@ -173,21 +200,11 @@ function! build#target(target) " {{{
     lchdir! -
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
-  elseif has_key(s:language_cmds, &filetype)
-    \ && has_key(s:language_cmds[&filetype], a:target)
-
-    " Substitute all placeholders.
-    let l:cmd = s:language_cmds[&filetype][a:target]
-    let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
-    let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
-    let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
-
-    let l:old_makeprg = &l:makeprg
-    let &l:makeprg = l:cmd
-    execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
-    lmake!
-    lchdir! -
-    let &l:makeprg = l:old_makeprg
+  elseif exists('g:build#languages')
+    \ && s:has_lang_target(g:build#languages, a:target)
+    call s:build_lang_target(g:build#languages, a:target)
+  elseif s:has_lang_target(s:language_cmds, a:target)
+    call s:build_lang_target(s:language_commands, a:target)
   else
     echo 'Unable to ' . a:target . " '" . expand('%:t') . "'"
   endif
