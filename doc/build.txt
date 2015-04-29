@@ -9,6 +9,7 @@ CONTENTS                                                         *build-contents
   3. Options......................................................|build-options|
     3.1 Autochdir into the project directory..................|g:build#autochdir|
     3.2 Define and customize build systems......................|g:build#systems|
+    3.3 Define single file build commands.....................|g:build#languages|
   4. License......................................................|build-license|
 
 ===============================================================================
@@ -86,6 +87,28 @@ run the clean target, the command will be called with "clean" as argument. To
 pass another argument instead, you need to define a replacement argument. This
 is done inside another dict associated with "target-args". See the example
 above.
+
+-------------------------------------------------------------------------------
+3.3 Define single file build commands                         *g:build#languages*
+
+If |build.vim| is unable to detect to which build system the current file
+belongs to, it will use language specific commands to build only the current
+file. To define your own commands, or to override existing ones, you must
+create a dict named |g:build#languages|. Here is a skeleton example:
+>
+  let g:build#languages =
+    \ {
+    \   'python':
+    \   {
+    \     'clean'   : 'python-cleaner "%HEAD%"',
+    \   }
+    \ }
+<
+Each command can contain three different placeholders:
+
+%PATH% - The full path to the directory containing the file.
+%NAME% - The filename with its extension.
+%HEAD% - The filename without its extension.
 
 ===============================================================================
 4. License                                                        *build-license*
