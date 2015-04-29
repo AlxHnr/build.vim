@@ -49,8 +49,8 @@ let s:build_systems =
   \ }
 " }}}
 
-" Fallback build commands for specific languages. {{{
-let s:language_fallback_commands =
+" Build commands for some languages. {{{
+let s:language_cmds =
   \ {
   \   'c':
   \   {
@@ -60,8 +60,9 @@ let s:language_fallback_commands =
   \   },
   \   'cpp':
   \   {
-  \     '@inherit' : 'c',
-  \     'build'    : 'g++ -std=c++11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
+  \     'clean' : 'rm "%HEAD%"',
+  \     'build' : 'g++ -std=c++11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
+  \     'run'   : './"%HEAD%"',
   \   },
   \   'd':
   \   {
@@ -85,60 +86,11 @@ let s:language_fallback_commands =
   \   {
   \     'run' : 'ocaml "%NAME%"',
   \   },
-  \   'sh,lua,python':
-  \   {
-  \     'run' : 'chmod +x "%NAME%" && ./"%NAME%"',
-  \   },
   \ }
 
-if exists('g:is_chicken')
-  let s:language_fallback_commands.scheme =
-    \ {
-    \   '@inherit' : 'c',
-    \   'build'    : 'csc -O3 "%NAME%" -o "%HEAD%"',
-    \ }
-endif
-" }}}
-
-" Resolve content in 's:language_fallback_commands'. {{{
-let s:language_commands = {}
-for [ languages, table ] in items(s:language_fallback_commands)
-  let s:inherited_languages = {}
-  let s:body = {}
-
-  " Resolve inheritance.
-  if has_key(table, '@inherit')
-    for language in split(table['@inherit'], ',')
-      if has_key(s:inherited_languages, language)
-        echoerr "fatal: '" . languages . "' tries to inherit from "
-          \ . language . " multiple times."
-        finish
-      endif
-      let s:inherited_languages[language] = 1
-
-      " Copy content from inherited languages into body.
-      if has_key(s:language_commands, language)
-        for [ entry_name, content ] in items(s:language_commands[language])
-          let s:body[entry_name] = content
-        endfor
-      else
-        echoerr "fatal: '" . languages . "' can't inherit from"
-          \ . " unresolved language '" . language . "'."
-        finish
-      endif
-    endfor
-  endif
-
-  " Overwrite inherited items with language specific values.
-  for [ entry_name, content ] in items(table)
-    if entry_name != '@inherit'
-      let s:body[entry_name] = content
-    endif
-  endfor
-
-  for language in split(languages, ',')
-    let s:language_commands[language] = s:body
-  endfor
+" Add support for some scripting languages.
+for lang in split('sh,lua,python,scheme', ',')
+  let s:language_cmds[lang] = { 'run' : 'chmod +x "%NAME%" && ./"%NAME%"' }
 endfor
 " }}}
 
@@ -221,11 +173,11 @@ function! build#target(target) " {{{
     lchdir! -
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
-  elseif a:target != '@inherit' && has_key(s:language_commands, &filetype)
-    \ && has_key(s:language_commands[&filetype], a:target)
+  elseif has_key(s:language_cmds, &filetype)
+    \ && has_key(s:language_cmds[&filetype], a:target)
 
     " Substitute all placeholders.
-    let l:cmd = s:language_commands[&filetype][a:target]
+    let l:cmd = s:language_cmds[&filetype][a:target]
     let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
     let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
     let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
