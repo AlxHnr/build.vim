@@ -29,6 +29,9 @@ if !exists('g:build#make_cmd')
   let g:build#make_cmd = 'lmake!'
 endif
 
+command! -nargs=* Build call build#target(<f-args>)
+command! -nargs=* BuildInit call build#init(<f-args>)
+
 augroup build
   autocmd!
   autocmd BufNewFile,BufRead * call build#setup()

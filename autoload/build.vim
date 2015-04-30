@@ -220,32 +220,41 @@ function! build#init(...) " {{{
   elseif exists('g:build#systems')
     \ && s:has_buildsys_item(g:build#systems, b:build_system_name, 'init')
     let l:init = g:build#systems[b:build_system_name].init
+    call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
   elseif s:has_buildsys_item(s:build_systems, b:build_system_name, 'init')
     let l:init = s:build_systems[b:build_system_name].init
+    call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
   else
     echo "'" . b:build_system_name . "' doesn't need to be initialized"
-    return
   endif
-
-  call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
 endfunction " }}}
 
-" Try to build the given target for the current file. If the current file
-" does not belong to any project, it tries to build the file itself. It
-" takes arbitrary arguments, which will be passed to the build command.
-function! build#target(target, ...) " {{{
+" Builds the current project or file. The first argument is optional, but
+" if specified, it must be a valid target name. If its omitted, it will
+" fallback to 'build'. All other arguments will be passed directly to the
+" build command.
+function! build#target(...) " {{{
+  " Handle optional arguments.
+  if a:0
+    let l:target = a:1
+    let l:extra_args = join(a:000[1:])
+  else
+    let l:target = 'build'
+    let l:extra_args = ''
+  endif
+
   if exists('b:build_system_name')
     call s:run_in_env(b:build_path,
       \ s:get_buildsys_item(b:build_system_name, 'command')
-      \ . ' ' . s:get_target_args(a:target) . ' ' . join(a:000))
+      \ . ' ' . s:get_target_args(l:target) . ' ' . l:extra_args)
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif exists('g:build#languages')
-    \ && s:has_lang_target(g:build#languages, a:target)
-    call s:build_lang_target(g:build#languages, a:target, join(a:000))
-  elseif s:has_lang_target(s:language_cmds, a:target)
-    call s:build_lang_target(s:language_cmds, a:target, join(a:000))
+    \ && s:has_lang_target(g:build#languages, l:target)
+    call s:build_lang_target(g:build#languages, l:target, l:extra_args)
+  elseif s:has_lang_target(s:language_cmds, l:target)
+    call s:build_lang_target(s:language_cmds, l:target, l:extra_args)
   else
-    echo 'Unable to ' . a:target . " '" . expand('%:t') . "'"
+    echo 'Unable to ' . l:target . " '" . expand('%:t') . "'"
   endif
 endfunction " }}}
