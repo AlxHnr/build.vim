@@ -173,20 +173,19 @@ function! build#setup() " {{{
 
   let l:known_systems = keys(s:build_systems)
   if exists('g:build#systems')
-    " Only add build systems, which were associated with a build file.
+    " Only add build systems with existing build files and build commands.
     for l:bs_name in keys(g:build#systems)
-      if has_key(g:build#systems[l:bs_name], 'file')
-        \ || s:has_buildsys_item(s:build_systems, l:bs_name, 'file')
+      if has_key(s:build_systems, l:bs_name)
+        continue
+      elseif has_key(g:build#systems[l:bs_name], 'file')
+        \ && has_key(g:build#systems[l:bs_name], 'command')
         call add(l:known_systems, l:bs_name)
       else
-        echomsg "build.vim: the build system '" . l:bs_name . "' is not"
-          \ . ' associated with a build file'
+        echomsg "build.vim: the build system '" . l:bs_name
+          \ . "' is incomplete"
         return
       endif
     endfor
-
-    " Deduplicate known build systems.
-    call uniq(sort(l:known_systems))
   endif
 
   " Search all directories from the current files pwd upwards for known
@@ -213,6 +212,8 @@ function! build#setup() " {{{
   unlet! b:build_system_name
 endfunction " }}}
 
+" Tries to initialize the current build system. Takes an arbitrary amount
+" of arguments, which will be passed to the initialisation command.
 function! build#init(...) " {{{
   if !exists('b:build_system_name')
     echo "The current file doesn't belong to a known build system"
