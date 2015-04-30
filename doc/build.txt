@@ -22,8 +22,8 @@ CONTENTS                                                         *build-contents
 
 |build| is a plugin, which figures out whether the file you're editing belongs
 to a project with a build system or not. Thus it knows how to build and run
-the stuff you are editing. This plugin operates by searching from the files
-directory upwards, until it finds a known build file.
+it. This plugin works by searching from the files directory upwards, until it
+finds a known build file.
 
 Once a build file was found, the following variables will be set for the
 current buffer:
@@ -70,7 +70,7 @@ build command, unless a replacement argument was defined in |g:build#systems|.
 If the current file doesn't belong to any known build system, it will use
 language specific commands to build it. See |build#languages|.
 
-Besides the target name, it takes an arbitrary amount of optional arguments,
+Besides the target name, it takes an arbitrary amount of additional arguments,
 which will be passed directly to the build command. The caller must take care
 of quoting and escaping those arguments.
 
@@ -80,7 +80,7 @@ of quoting and escaping those arguments.
 The function |build#init| takes an arbitrary amount of arguments and will pass
 them directly to the build systems init command. The caller must take care of
 quoting and escaping those arguments. If the current build system has no init
-command associated with it, it will stop with a message.
+command, it will stop with a message.
 
 ===============================================================================
 4. Options                                                        *build-options*
@@ -88,7 +88,7 @@ command associated with it, it will stop with a message.
 -------------------------------------------------------------------------------
 4.1 Autochdir into the project directory                      *g:build#autochdir*
 
-If |build.vim| detects that your file belongs to a build system, and this
+If |build.vim| detects that your file belongs to a build system and this
 variable is set to 1, it will change the buffers directory path to
 |b:build_path|.
 
@@ -115,14 +115,14 @@ Every build system must have a name, a file entry and a command entry. The
 file entry contains a comma separated list of filenames, describing the build
 file which should be searched. The command entry contains the command needed
 to invoke the build system. It will be executed in the directory of the build
-file. The "init" entry contains the command required to initialize the build
-system. It will be used by |build#init| and |BuildInit|.
+file. The "init" entry is optional and contains the command required to
+initialize the build.
 
-The name of the target will be passed to the build command. So if you want to
-run the clean target, the command will be called with "clean" as argument. To
-pass another argument instead, you need to define a replacement argument. This
-is done inside another dict associated with "target-args". See the example
-above.
+The name of the target will be passed to the build command. E.g. if you want
+to run the clean target, the command will be called with "clean" as argument.
+To pass another argument instead, you need to define a replacement argument.
+This is done inside another dictionary associated with "target-args". See the
+example above.
 
 -------------------------------------------------------------------------------
 4.3 Define single file build commands                         *g:build#languages*
@@ -130,7 +130,7 @@ above.
 If |build.vim| is unable to detect to which build system the current file
 belongs to, it will use language specific commands to build only the current
 file. To define your own commands, or to override existing ones, you must
-create a dict named |g:build#languages|. Here is an example:
+create a dictionary named |g:build#languages|. Here is an example:
 >
   let g:build#languages =
     \ {
@@ -150,10 +150,7 @@ three different placeholders:
 -------------------------------------------------------------------------------
 4.4 Set the vim make command to use                            *g:build#make_cmd*
 
-This variable contains the vim command, which is used to build either the
-current file, or the project to which it belongs. It will be executed either
-in the directory of the file, or the directory of the projects build file.
-During that, 'makeprg' will be set to the command needed for building.
+The Vim command to use when invoking 'makeprg'. See 'make' and 'lmake'.
 
 Default:
 >
