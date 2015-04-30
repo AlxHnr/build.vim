@@ -168,7 +168,19 @@ function! build#setup() " {{{
 
   let l:known_systems = keys(s:build_systems)
   if exists('g:build#systems')
-    let l:known_systems += keys(g:build#systems)
+    " Only add build systems, which were associated with a build file.
+    for l:bs_name in keys(g:build#systems)
+      if has_key(g:build#systems[l:bs_name], 'file')
+        \ || s:has_buildsys_item(s:build_systems, l:bs_name, 'file')
+        call add(l:known_systems, l:bs_name)
+      else
+        echomsg "build.vim: the build system '" . l:bs_name . "' is not"
+          \ . ' associated with a build file'
+        return
+      endif
+    endfor
+
+    " Deduplicate known build systems.
     call uniq(sort(l:known_systems))
   endif
 
