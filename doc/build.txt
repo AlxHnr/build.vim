@@ -136,7 +136,7 @@ create a dictionary named |g:build#languages|. Here is an example:
     \ {
     \   'python':
     \   {
-    \     'clean' : 'python-cleaner "%HEAD%"',
+    \     'test' : 'python-tester "%NAME%"',
     \   }
     \ }
 <
@@ -150,7 +150,7 @@ three different placeholders:
 -------------------------------------------------------------------------------
 4.4 Set the vim make command to use                            *g:build#make_cmd*
 
-The Vim command to use when invoking 'makeprg'. See 'make' and 'lmake'.
+The Vim command to use for invoking 'makeprg'. See 'make' and 'lmake'.
 
 Default:
 >
