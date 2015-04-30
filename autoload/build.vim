@@ -148,7 +148,7 @@ function! s:build_lang_target(cmd_dict, target) " {{{
   let l:old_makeprg = &l:makeprg
   let &l:makeprg = l:cmd
   execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
-  lmake!
+  execute g:build#make_cmd
   lchdir! -
   let &l:makeprg = l:old_makeprg
 endfunction " }}}
@@ -196,7 +196,7 @@ endfunction " }}}
 function! build#target(target) " {{{
   if exists('b:build_path')
     execute 'lchdir! ' . escape(b:build_path, '\ ')
-    execute 'lmake! ' . s:get_target_args(a:target)
+    execute g:build#make_cmd . ' ' . s:get_target_args(a:target)
     lchdir! -
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'

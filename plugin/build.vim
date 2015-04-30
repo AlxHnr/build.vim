@@ -25,6 +25,10 @@ if exists('g:loaded_build')
 endif
 let g:loaded_build = 1
 
+if !exists('g:build#make_cmd')
+  let g:build#make_cmd = 'lmake!'
+endif
+
 augroup build
   autocmd!
   autocmd BufNewFile,BufRead * call build#setup()
