@@ -50,9 +50,9 @@ unless it was overridden in |g:build#systems|. If the current file doesn't
 belong to any known build file, it will use fallback commands to compile and
 run it. Common build targets are "build", "run", "clean" and "test".
 
-Besides the target name, this function takes an arbitrary amount of optional
-arguments, which will be passed directly to the build command. But don't
-forget to quote and escape those arguments properly.
+Besides the target name, it takes an arbitrary amount of optional arguments,
+which will be passed directly to the build command. Its up to you to quote and
+escape those arguments properly.
 
 ===============================================================================
 3. Options                                                        *build-options*
@@ -85,7 +85,8 @@ must create the dictionary |g:build#systems|. Here is an example:
 Every build system must have a name, a file entry and a command entry. The
 file entry contains a comma separated list of filenames, describing the build
 file which should be searched. The command entry contains the command needed
-to invoke the build system.
+to invoke the build system. It will be executed in the directory of the build
+file.
 
 The name of the target will be passed to the build command. So if you want to
 run the clean target, the command will be called with "clean" as argument. To
@@ -109,7 +110,8 @@ create a dict named |g:build#languages|. Here is an example:
     \   }
     \ }
 <
-Each command can contain three different placeholders:
+Every command will be executed in the directory of the file and can contain
+three different placeholders:
 
 %PATH% - The full path to the directory containing the file.
 %NAME% - The filename with its extension.
