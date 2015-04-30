@@ -135,6 +135,17 @@ function! s:has_lang_target(cmd_dict, target) " {{{
     \ && has_key(a:cmd_dict[&filetype], a:target)
 endfunction " }}}
 
+" Setups makeprg, changes into the given dir and runs g:build#make_cmd
+" inside it. It restores the previous makeprg and path afterwards.
+function! s:run_in_env(dir, cmd) " {{{
+  let l:old_makeprg = &l:makeprg
+  let &l:makeprg = a:cmd
+  execute 'lchdir! ' . escape(a:dir, '\ ')
+  execute g:build#make_cmd
+  lchdir! -
+  let &l:makeprg = l:old_makeprg
+endfunction " }}}
+
 " Builds the target for the current file with rules from the given dict.
 " This function expects a valid dict with all entries needed to build the
 " current file. It takes an extra argument string for the build command.
@@ -145,15 +156,10 @@ function! s:build_lang_target(cmd_dict, target, extra_args) " {{{
   let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
   let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
 
-  let l:old_makeprg = &l:makeprg
-  let &l:makeprg = l:cmd
-  execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
-  execute g:build#make_cmd . ' ' . a:extra_args
-  lchdir! -
-  let &l:makeprg = l:old_makeprg
+  call s:run_in_env(expand('%:p:h'), l:cmd . ' ' . a:extra_args)
 endfunction " }}}
 
-" Setups variables, makeprg and changes the current directory.
+" Setups some variables and changes the current directory.
 function! build#setup() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
@@ -176,7 +182,6 @@ function! build#setup() " {{{
         if filereadable(l:current_path . '/' . l:build_file)
           let b:build_path = l:current_path
           let b:build_system_name = l:build_name
-          let &l:makeprg = s:get_buildsys_item(l:build_name, 'command')
 
           if exists('g:build#autochdir') && g:build#autochdir
             execute 'lchdir! ' . escape(b:build_path, '\ ')
@@ -195,11 +200,10 @@ endfunction " }}}
 " does not belong to any project, it tries to build the file itself. It
 " takes arbitrary arguments, which will be passed to the build command.
 function! build#target(target, ...) " {{{
-  if exists('b:build_path')
-    execute 'lchdir! ' . escape(b:build_path, '\ ')
-    execute g:build#make_cmd . ' ' . s:get_target_args(a:target)
-      \ . ' ' . join(a:000)
-    lchdir! -
+  if exists('b:build_system_name')
+    call s:run_in_env(b:build_path,
+      \ s:get_buildsys_item(b:build_system_name, 'command')
+      \ . ' ' . s:get_target_args(a:target) . ' ' . join(a:000))
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif exists('g:build#languages')
