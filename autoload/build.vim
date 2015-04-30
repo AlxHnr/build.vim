@@ -137,8 +137,8 @@ endfunction " }}}
 
 " Builds the target for the current file with rules from the given dict.
 " This function expects a valid dict with all entries needed to build the
-" current file.
-function! s:build_lang_target(cmd_dict, target) " {{{
+" current file. It takes an extra argument string for the build command.
+function! s:build_lang_target(cmd_dict, target, extra_args) " {{{
   " Substitute all placeholders.
   let l:cmd = a:cmd_dict[&filetype][a:target]
   let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
@@ -148,7 +148,7 @@ function! s:build_lang_target(cmd_dict, target) " {{{
   let l:old_makeprg = &l:makeprg
   let &l:makeprg = l:cmd
   execute 'lchdir! ' . escape(expand('%:p:h'), '\ ')
-  execute g:build#make_cmd
+  execute g:build#make_cmd . ' ' . a:extra_args
   lchdir! -
   let &l:makeprg = l:old_makeprg
 endfunction " }}}
@@ -192,19 +192,21 @@ function! build#setup() " {{{
 endfunction " }}}
 
 " Try to build the given target for the current file. If the current file
-" does not belong to any project, it tries to build the file itself.
-function! build#target(target) " {{{
+" does not belong to any project, it tries to build the file itself. It
+" takes arbitrary arguments, which will be passed to the build command.
+function! build#target(target, ...) " {{{
   if exists('b:build_path')
     execute 'lchdir! ' . escape(b:build_path, '\ ')
     execute g:build#make_cmd . ' ' . s:get_target_args(a:target)
+      \ . ' ' . join(a:000)
     lchdir! -
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif exists('g:build#languages')
     \ && s:has_lang_target(g:build#languages, a:target)
-    call s:build_lang_target(g:build#languages, a:target)
+    call s:build_lang_target(g:build#languages, a:target, join(a:000))
   elseif s:has_lang_target(s:language_cmds, a:target)
-    call s:build_lang_target(s:language_commands, a:target)
+    call s:build_lang_target(s:language_commands, a:target, join(a:000))
   else
     echo 'Unable to ' . a:target . " '" . expand('%:t') . "'"
   endif
