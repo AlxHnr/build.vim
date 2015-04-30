@@ -206,7 +206,7 @@ function! build#target(target, ...) " {{{
     \ && s:has_lang_target(g:build#languages, a:target)
     call s:build_lang_target(g:build#languages, a:target, join(a:000))
   elseif s:has_lang_target(s:language_cmds, a:target)
-    call s:build_lang_target(s:language_commands, a:target, join(a:000))
+    call s:build_lang_target(s:language_cmds, a:target, join(a:000))
   else
     echo 'Unable to ' . a:target . " '" . expand('%:t') . "'"
   endif
