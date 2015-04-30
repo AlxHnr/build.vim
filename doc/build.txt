@@ -20,10 +20,10 @@ CONTENTS                                                         *build-contents
 ===============================================================================
 1. Description                                                *build-description*
 
-|build| is a plugin, which figures out whether the file you're editing belongs
-to a project with a build system or not. Thus it knows how to build and run
-it. This plugin works by searching from the files directory upwards, until it
-finds a known build file.
+|Build.vim| is a plugin, which figures out whether the file you're editing
+belongs to a project with a build system or not. Thus it knows how to build
+and run it. This plugin works by searching from the files directory upwards,
+until it finds a known build file.
 
 Once a build file was found, the following variables will be set for the
 current buffer:
