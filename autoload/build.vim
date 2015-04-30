@@ -23,14 +23,10 @@
 " Informations about various builds systems. {{{
 let s:build_systems =
   \ {
-  \   'make':
+  \   'Cargo':
   \   {
-  \     'file'    : 'Makefile,makefile',
-  \     'command' : 'make',
-  \     'target-args':
-  \     {
-  \       'build' : 'all',
-  \     },
+  \     'file'    : 'Cargo.toml',
+  \     'command' : 'cargo',
   \   },
   \   'CMake':
   \   {
@@ -46,6 +42,15 @@ let s:build_systems =
   \   {
   \     'file'    : 'dub.json',
   \     'command' : 'dub',
+  \   },
+  \   'make':
+  \   {
+  \     'file'    : 'Makefile,makefile',
+  \     'command' : 'make',
+  \     'target-args':
+  \     {
+  \       'build' : 'all',
+  \     },
   \   },
   \ }
 " }}}
@@ -77,15 +82,21 @@ let s:language_cmds =
   \     'build'  : 'javac -Xlint "%NAME%"',
   \     'run'    : 'java "%HEAD%"',
   \   },
+  \   'ocaml':
+  \   {
+  \     'run' : 'ocaml "%NAME%"',
+  \   },
+  \   'rust':
+  \   {
+  \     'clean' : 'rm "%HEAD%"',
+  \     'build' : 'rustc "%NAME%"',
+  \     'run'   : './"%HEAD%"',
+  \   },
   \   'tex':
   \   {
   \     'clean'  : 'rm "%HEAD%".{aux,log,nav,out,pdf,snm,toc}',
   \     'build'  : 'pdflatex -file-line-error -halt-on-error "%NAME%"',
   \     'run'    : 'xdg-open "%HEAD%.pdf"',
-  \   },
-  \   'ocaml':
-  \   {
-  \     'run' : 'ocaml "%NAME%"',
   \   },
   \ }
 
