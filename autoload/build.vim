@@ -35,7 +35,8 @@ let s:build_systems =
   \   'CMake':
   \   {
   \     'file'    : 'CMakeLists.txt',
-  \     'command' : 'cmake',
+  \     'init'    : 'mkdir -p build/ && cd build/ && cmake ../',
+  \     'command' : 'cmake --build ./build/ --target',
   \     'target-args':
   \     {
   \       'build' : 'all',
@@ -94,12 +95,17 @@ for lang in split('sh,lua,python,scheme', ',')
 endfor
 " }}}
 
+function! s:has_buildsys_item(build_systems, bs_name, key) " {{{
+  return has_key(a:build_systems, a:bs_name)
+    \ && has_key(a:build_systems[a:bs_name], a:key)
+endfunction " }}}
+
 " Gets the value associated with 'key' for the given build system. It
 " checks g:build#systems first, then searches the item in the fallback
-" build system dict.
+" build system dict, which must contain the item.
 function! s:get_buildsys_item(bs_name, key) " {{{
-  if exists('g:build#systems') && has_key(g:build#systems, a:bs_name)
-    \ && has_key(g:build#systems[a:bs_name], a:key)
+  if exists('g:build#systems')
+    \ && s:has_buildsys_item(g:build#systems, a:bs_name, a:key)
     return g:build#systems[a:bs_name][a:key]
   else
     return s:build_systems[a:bs_name][a:key]
@@ -109,8 +115,7 @@ endfunction " }}}
 " Returns true, if a target argument exists for the given target in the
 " given build system dict.
 function! s:has_target_args(build_systems, bs_name, target) " {{{
-  return has_key(a:build_systems, a:bs_name)
-  \ && has_key(a:build_systems[a:bs_name], 'target-args')
+  return s:has_buildsys_item(a:build_systems, a:bs_name, 'target-args')
   \ && has_key(a:build_systems[a:bs_name]['target-args'], a:target)
 endfunction " }}}
 
@@ -206,6 +211,22 @@ function! build#setup() " {{{
 
   unlet! b:build_path
   unlet! b:build_system_name
+endfunction " }}}
+
+function! build#init(...) " {{{
+  if !exists('b:build_system_name')
+    echo "The current file doesn't belong to a known build system"
+  elseif exists('g:build#systems')
+    \ && s:has_buildsys_item(g:build#systems, b:build_system_name, 'init')
+    let l:init = g:build#systems[b:build_system_name].init
+  elseif s:has_buildsys_item(s:build_systems, b:build_system_name, 'init')
+    let l:init = s:build_systems[b:build_system_name].init
+  else
+    echo "'" . b:build_system_name . "' doesn't need to be initialized"
+    return
+  endif
+
+  call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
 endfunction " }}}
 
 " Try to build the given target for the current file. If the current file
