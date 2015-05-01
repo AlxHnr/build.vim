@@ -114,11 +114,12 @@ let s:language_cmds =
 let s:scripting_languages =
   \ 'sh,csh,tcsh,zsh,sed,awk,lua,python,ruby,perl,perl6,tcl,scheme'
 
-for lang in split(s:scripting_languages, ',')
-  let s:language_cmds[lang] = { 'run' : 'chmod +x "%NAME%" && ./"%NAME%"' }
+for s:language in split(s:scripting_languages, ',')
+  let s:language_cmds[s:language] =
+    \ { 'run' : 'chmod +x "%NAME%" && ./"%NAME%"' }
 endfor
 
-unlet lang s:scripting_languages
+unlet s:scripting_languages s:language
 " }}}
 
 function! s:has_buildsys_item(build_systems, bs_name, key) " {{{
