@@ -29,8 +29,8 @@ The following build systems are supported:
 Please mind that build systems are often a mess and some projects use more
 than one, so this plugin will simply use the first one it finds.
 
-This plugin can build an run these filetypes: C, C++, D, Java, OCaml, Rust
-and (La)Tex.
+If no build system could be found, it provides fallback commands to build
+and run these filetypes: C, C++, D, Java, OCaml, Rust and (La)Tex.
 
 The _run_ target supports running the following languages like normal
 scripts if they have a
@@ -38,7 +38,7 @@ scripts if they have a
 sed, awk, lua, python, ruby, perl, perl6, tcl, scheme.
 
 To extend and customize build systems, rules and language specific
-commands, take a look at the plugins documentation.
+commands, take a look at the documentation of this plugin.
 
 ## Commands
 
