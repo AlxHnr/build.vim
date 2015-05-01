@@ -23,6 +23,16 @@
 " Informations about various builds systems. {{{
 let s:build_systems =
   \ {
+  \   'Autotools':
+  \   {
+  \     'file'    : 'configure',
+  \     'init'    : './configure',
+  \     'command' : 'make',
+  \     'target-args':
+  \     {
+  \       'build' : 'all',
+  \     },
+  \   },
   \   'Cargo':
   \   {
   \     'file'    : 'Cargo.toml',
@@ -43,7 +53,7 @@ let s:build_systems =
   \     'file'    : 'dub.json',
   \     'command' : 'dub',
   \   },
-  \   'make':
+  \   'Make':
   \   {
   \     'file'    : 'Makefile,makefile',
   \     'command' : 'make',

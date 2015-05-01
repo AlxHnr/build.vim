@@ -8,7 +8,8 @@ otherwise.
 ## Usage
 
 Just open a source file and run it using `:Build run`. Some files need to
-be build in advance with the `:Build` command.
+be build in advance with the `:Build` command. Various build systems must
+be initialized with `:BuildInit` before they can be used.
 
 The variable `b:build_system_name` will be set if the current file belongs
 to a supported build system.
@@ -19,17 +20,22 @@ Common build targets are _build_, _run_, _clean_ and _test_.
 
 The following build systems are supported:
 
+  * [Autotools](http://www.gnu.org/software/autoconf/)
   * [Cargo](https://crates.io/)
   * [CMake](http://www.cmake.org/)
-  * Make
+  * [Make](https://en.wikipedia.org/wiki/Make_(software))
   * [DUB](http://code.dlang.org/)
 
-It can also build an run these filetypes: C, C++, Java, OCaml, Rust and
-(La)Tex.
+Please mind that build systems are often a mess and some projects use more
+than one, so this plugin will simply use the first one it finds.
 
-The _run_ target supports running these languages like normal scripts, if
-they have a [shebang](http://en.wikipedia.org/wiki/Shebang_(Unix)):
-sh, csh, tcsh, zsh, sed, awk, lua, python, ruby, perl, perl6, tcl, scheme.
+This plugin can build an run these filetypes: C, C++, D, Java, OCaml, Rust
+and (La)Tex.
+
+The _run_ target supports running the following languages like normal
+scripts if they have a
+[shebang](http://en.wikipedia.org/wiki/Shebang_(Unix)): sh, csh, tcsh, zsh,
+sed, awk, lua, python, ruby, perl, perl6, tcl, scheme.
 
 To extend and customize build systems, rules and language specific
 commands, take a look at the plugins documentation.
