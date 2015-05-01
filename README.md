@@ -7,15 +7,35 @@ otherwise.
 
 ## Usage
 
-Just open a source file and run it with `:Build run`. Some files need to be
-build prior to running by using the `:Build` command.
+Just open a source file and run it using `:Build run`. Some files need to
+be build in advance with the `:Build` command.
 
-If the current file belongs to a supported build system, the variable
-`b:build_system_name` will be set.
+The variable `b:build_system_name` will be set if the current file belongs
+to a supported build system.
 
 Common build targets are _build_, _run_, _clean_ and _test_.
 
+## Supported build systems and languages
+
+The following build systems are supported:
+
+  * [Cargo](https://crates.io/)
+  * [CMake](http://www.cmake.org/)
+  * Make
+  * [DUB](http://code.dlang.org/)
+
+It can also build an run these filetypes: C, C++, Java, OCaml, Rust and
+(La)Tex.
+
+The _run_ target supports running these languages like normal scripts, if
+they have a [shebang](http://en.wikipedia.org/wiki/Shebang_(Unix)):
+sh, csh, tcsh, zsh, sed, awk, lua, python, ruby, perl, perl6, tcl, scheme.
+
+To extend and customize build systems, rules and language specific
+commands, take a look at the plugins documentation.
+
 ## Commands
+
 ### Build
 
 This command takes an arbitrary amount of arguments. If no argument was
@@ -36,9 +56,6 @@ quoting and escaping those arguments. If the current build system has no
 init command, it will stop with a message.
 
 ## Configuration
-
-To add custom build systems, rules and language specific commands, take a
-look at the plugins documentation.
 
 ### g:build#autochdir
 
