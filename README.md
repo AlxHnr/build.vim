@@ -7,8 +7,15 @@ otherwise.
 
 ## Usage
 
-This plugin provides two commands:
+Just open a source file and run it with `:Build run`. Some files need to be
+build prior to running by using the `:Build` command.
 
+If the current file belongs to a supported build system, the variable
+`b:build_system_name` will be set.
+
+Common build targets are _build_, _run_, _clean_ and _test_.
+
+## Commands
 ### Build
 
 This command takes an arbitrary amount of arguments. If no argument was
