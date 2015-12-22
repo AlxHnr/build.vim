@@ -30,7 +30,7 @@ Please mind that build systems are often a mess and some projects use more
 than one, so this plugin will simply use the first one it finds.
 
 If no build system could be found, it provides fallback commands to build
-and run these filetypes: C, C++, D, Java, OCaml, Rust and (La)Tex.
+and run these filetypes: C, C++, D, Java, OCaml, Racket, Rust and (La)Tex.
 
 The _run_ target supports running the following languages like normal
 scripts if they have a

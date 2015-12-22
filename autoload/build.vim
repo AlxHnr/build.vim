@@ -96,6 +96,12 @@ let s:language_cmds =
   \   {
   \     'run' : 'ocaml "%NAME%"',
   \   },
+  \   'racket':
+  \   {
+  \     'run'   : 'racket "%NAME%"',
+  \     'build' : 'raco make -v "%NAME%"',
+  \     'clean' : 'rm compiled/*_rkt.{dep,zo}; rm -rf compiled/drracket; rmdir compiled',
+  \   },
   \   'rust':
   \   {
   \     'clean' : 'rm "%HEAD%"',
