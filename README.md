@@ -30,7 +30,8 @@ Please mind that build systems are often a mess and some projects use more
 than one, so this plugin will simply use the first one it finds.
 
 If no build system could be found, it provides fallback commands to build
-and run these filetypes: C, C++, D, Java, OCaml, Racket, Rust and (La)Tex.
+and run [these](https://github.com/AlxHnr/build.vim/blob/master/autoload/build.vim#L69)
+filetypes.
 
 The _run_ target supports running the following languages like normal
 scripts if they have a
