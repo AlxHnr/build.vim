@@ -86,6 +86,12 @@ let s:language_cmds =
   \     'build' : 'dmd "%NAME%"',
   \     'run'   : './"%HEAD%"',
   \   },
+  \   'haskell':
+  \   {
+  \     'clean' : 'rm "%HEAD%"{,.hi,.o}',
+  \     'build' : 'ghc "%NAME%"',
+  \     'run'   : './"%HEAD%"',
+  \   },
   \   'java':
   \   {
   \     'clean'  : 'rm "%HEAD%.class"',
@@ -107,6 +113,12 @@ let s:language_cmds =
   \     'clean' : 'rm "%HEAD%"',
   \     'build' : 'rustc "%NAME%"',
   \     'run'   : './"%HEAD%"',
+  \   },
+  \   'scala':
+  \   {
+  \     'clean'  : 'rm "%HEAD%"*.class',
+  \     'build'  : 'scalac "%NAME%"',
+  \     'run'    : 'scala "%HEAD%"',
   \   },
   \   'tex':
   \   {
