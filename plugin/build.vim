@@ -1,4 +1,4 @@
-" Copyright (c) 2015 Alexander Heinrich <alxhnr@nudelpost.de> {{{
+" Copyright (c) 2015 Alexander Heinrich {{{
 "
 " This software is provided 'as-is', without any express or implied
 " warranty. In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@ endif
 let g:loaded_build = 1
 
 if !exists('g:build#make_cmd')
-  let g:build#make_cmd = 'lmake!'
+  let g:build#make_cmd = 'call build#run_makeprg()'
 endif
 
 command! -nargs=* Build call build#target(<f-args>)

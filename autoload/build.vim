@@ -1,4 +1,4 @@
-" Copyright (c) 2015 Alexander Heinrich <alxhnr@nudelpost.de> {{{
+" Copyright (c) 2015 Alexander Heinrich {{{
 "
 " This software is provided 'as-is', without any express or implied
 " warranty. In no event will the authors be held liable for any damages
@@ -301,5 +301,18 @@ function! build#target(...) " {{{
     call s:build_lang_target(s:language_cmds, l:target, l:extra_args)
   else
     echo 'Unable to ' . l:target . " '" . expand('%:t') . "'"
+  endif
+endfunction " }}}
+
+" Runs 'makeprg'.
+function! build#run_makeprg() " {{{
+  if has('nvim')
+    let l:cmd = &l:makeprg
+    rightbelow new
+    autocmd build BufWinLeave <buffer> wincmd p
+    call termopen(l:cmd)
+    startinsert
+  else
+    lmake!
   endif
 endfunction " }}}

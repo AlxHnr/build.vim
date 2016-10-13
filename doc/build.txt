@@ -10,17 +10,18 @@ CONTENTS                                                         *build-contents
     3.1 Search for known build systems..............................|build#setup|
     3.2 Build the given target.....................................|build#target|
     3.3 Initialize the current project...............................|build#init|
+    3.4 Run 'makeprg'.........................................|build#run_makeprg|
   4. Options......................................................|build-options|
     4.1 Autochdir into the project directory..................|g:build#autochdir|
     4.2 Define and customize build systems......................|g:build#systems|
     4.3 Define single file build commands.....................|g:build#languages|
-    4.4 Set the vim make command to use........................|g:build#make_cmd|
+    4.4 Set the vim command to use for building................|g:build#make_cmd|
   5. License......................................................|build-license|
 
 ===============================================================================
 1. Description                                                *build-description*
 
-|Build.vim| is a plugin, which figures out whether the file you're editing
+|Build.vim| is a plugin which figures out whether the file you're editing
 belongs to a project with a build system or not. Thus it knows how to build
 and run it. This plugin works by searching from the files directory upwards,
 until it finds a known build file.
@@ -81,6 +82,12 @@ The function |build#init| takes an arbitrary amount of arguments and will pass
 them directly to the build systems init command. The caller must take care of
 quoting and escaping those arguments. If the current build system has no init
 command, it will stop with a message.
+
+-------------------------------------------------------------------------------
+3.4 Run 'makeprg'                                             *build#run_makeprg*
+
+In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a terminal
+below the current buffer. It was intended to be used through |g:build#make_cmd|.
 
 ===============================================================================
 4. Options                                                        *build-options*
@@ -148,18 +155,18 @@ three different placeholders:
 %HEAD% - The filename without its extension.
 
 -------------------------------------------------------------------------------
-4.4 Set the vim make command to use                            *g:build#make_cmd*
+4.4 Set the vim command to use for building                    *g:build#make_cmd*
 
-The Vim command to use for invoking 'makeprg'. See 'make' and 'lmake'.
+This Vim command will be run inside the project directory with 'makeprg' set.
 
 Default:
 >
-  let g:build#make_cmd = 'lmake!'
+  let g:build#make_cmd = 'call build#run_makeprg()'
 <
 ===============================================================================
 5. License                                                        *build-license*
 >
-  Copyright (c) 2015 Alexander Heinrich <alxhnr@nudelpost.de>
+  Copyright (c) 2015 Alexander Heinrich
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
