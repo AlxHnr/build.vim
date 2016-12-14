@@ -1,5 +1,3 @@
-# Build.vim
-
 This plugin builds and runs projects or even single source files using the
 right tool. It works by searching for known build files from the current
 files path upwards, and will fall back to language specific build commands
@@ -61,15 +59,3 @@ This command takes an arbitrary amount of arguments and will pass them
 directly to the build systems init command. The caller must take care of
 quoting and escaping those arguments. If the current build system has no
 init command, it will stop with a message.
-
-## Configuration
-
-### g:build#autochdir
-
-If this variable is set to 1 and this plugin finds a build file, it will
-change the working directory of the current buffer to the build files
-directory.
-
-## License
-
-Released under the zlib license.

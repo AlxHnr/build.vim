@@ -12,10 +12,9 @@ CONTENTS                                                         *build-contents
     3.3 Initialize the current project...............................|build#init|
     3.4 Run 'makeprg'.........................................|build#run_makeprg|
   4. Options......................................................|build-options|
-    4.1 Autochdir into the project directory..................|g:build#autochdir|
-    4.2 Define and customize build systems......................|g:build#systems|
-    4.3 Define single file build commands.....................|g:build#languages|
-    4.4 Set the vim command to use for building................|g:build#make_cmd|
+    4.1 Define and customize build systems......................|g:build#systems|
+    4.2 Define single file build commands.....................|g:build#languages|
+    4.3 Set the vim command to use for building................|g:build#make_cmd|
   5. License......................................................|build-license|
 
 ===============================================================================
@@ -55,11 +54,10 @@ arguments.
 3.1 Search for known build systems                                  *build#setup*
 
 The function |build#setup| takes no arguments and searches from the current
-files path upwards for a known build file. It will setup some local variables,
-and if |g:build#autochdir| is set to 1 it will change the working directory of
-the current buffer. Usually you don't need to call this function manually. In
-the case that no build file could be found, this function will do nothing but
-unset |b:build_system_name| and |b:build_path|.
+files path upwards for a known build file. It will setup some local variables.
+Usually you don't need to call this function manually. In the case that no
+build file could be found, this function will do nothing but unset
+|b:build_system_name| and |b:build_path|.
 
 -------------------------------------------------------------------------------
 3.2 Build the given target                                         *build#target*
@@ -93,14 +91,7 @@ below the current buffer. It was intended to be used through |g:build#make_cmd|.
 4. Options                                                        *build-options*
 
 -------------------------------------------------------------------------------
-4.1 Autochdir into the project directory                      *g:build#autochdir*
-
-If |build.vim| detects that your file belongs to a build system and this
-variable is set to 1, it will change the buffers directory path to
-|b:build_path|.
-
--------------------------------------------------------------------------------
-4.2 Define and customize build systems                          *g:build#systems*
+4.1 Define and customize build systems                          *g:build#systems*
 
 |build.vim| supports various build system by default. To add new build
 systems, or to override certain settings of the predefined build systems, you
@@ -132,7 +123,7 @@ This is done inside another dictionary associated with "target-args". See the
 example above.
 
 -------------------------------------------------------------------------------
-4.3 Define single file build commands                         *g:build#languages*
+4.2 Define single file build commands                         *g:build#languages*
 
 If |build.vim| is unable to detect to which build system the current file
 belongs to, it will use language specific commands to build only the current
@@ -155,7 +146,7 @@ three different placeholders:
 %HEAD% - The filename without its extension.
 
 -------------------------------------------------------------------------------
-4.4 Set the vim command to use for building                    *g:build#make_cmd*
+4.3 Set the vim command to use for building                    *g:build#make_cmd*
 
 This Vim command will be run inside the project directory with 'makeprg' set.
 

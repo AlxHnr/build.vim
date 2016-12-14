@@ -243,10 +243,6 @@ function! build#setup() " {{{
         if filereadable(l:current_path . '/' . l:build_file)
           let b:build_path = l:current_path
           let b:build_system_name = l:build_name
-
-          if exists('g:build#autochdir') && g:build#autochdir
-            execute 'lchdir! ' . escape(b:build_path, '\ ')
-          endif
           return
         endif
       endfor
