@@ -98,6 +98,12 @@ let s:language_cmds =
   \     'build'  : 'javac -Xlint "%NAME%"',
   \     'run'    : 'java "%HEAD%"',
   \   },
+  \   'nim':
+  \   {
+  \     'clean' : 'rm -rf nimcache "%HEAD%"',
+  \     'build' : 'nim compile "%NAME%"',
+  \     'run'   : './"%HEAD%"',
+  \   },
   \   'ocaml':
   \   {
   \     'run' : 'ocaml "%NAME%"',
