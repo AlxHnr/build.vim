@@ -14,31 +14,6 @@ to a supported build system.
 
 Common build targets are _build_, _run_, _clean_ and _test_.
 
-## Supported build systems and languages
-
-The following build systems are supported:
-
-  * [Autotools](http://www.gnu.org/software/autoconf/)
-  * [Cargo](https://crates.io/)
-  * [CMake](http://www.cmake.org/)
-  * [Make](https://en.wikipedia.org/wiki/Make_(software))
-  * [DUB](http://code.dlang.org/)
-
-Please mind that build systems are often a mess and some projects use more
-than one, so this plugin will simply use the first one it finds.
-
-If no build system could be found, it provides fallback commands to build
-and run [these](https://github.com/AlxHnr/build.vim/blob/master/autoload/build.vim#L69)
-filetypes.
-
-The _run_ target supports running the following languages like normal
-scripts if they have a
-[shebang](http://en.wikipedia.org/wiki/Shebang_(Unix)): sh, csh, tcsh, zsh,
-sed, awk, lua, python, ruby, perl, perl6, tcl, scheme.
-
-To extend and customize build systems, rules and language specific
-commands, take a look at the documentation of this plugin.
-
 ## Commands
 
 ### Build
