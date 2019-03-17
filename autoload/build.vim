@@ -298,7 +298,7 @@ function! build#run_makeprg() " {{{
   if has('nvim')
     let l:cmd = &l:makeprg
     rightbelow new
-    autocmd build BufWinLeave <buffer> wincmd p
+    autocmd build WinLeave <buffer> wincmd p
     call termopen(l:cmd)
     startinsert
   else
