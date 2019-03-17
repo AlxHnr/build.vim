@@ -1,36 +1,96 @@
-This plugin builds and runs projects or even single source files using the
-right tool. It works by searching for known build files from the current
-files path upwards, and will fall back to language specific build commands
-otherwise.
+This plugin provides commands wrapping the build system to which the
+current file belongs. It searches from each files directory upwards for
+Makefiles and the like. Two commands are provided:
 
-## Usage
+* **:Build** - To build/run a target
+* **:BuildInit** - To initialize/configure builds
 
-Just open a source file and run it using `:Build run`. Some files need to
-be build in advance with the `:Build` command. Various build systems must
-be initialized with `:BuildInit` before they can be used.
+**Note**: If the current file doesn't belong to any known build system, it
+will be build using associated compilers. E.g. C files will be build using
+gcc.
 
-The variable `b:build_system_name` will be set if the current file belongs
-to a supported build system.
+# Usage Examples
 
-Common build targets are _build_, _run_, _clean_ and _test_.
+## CMake
 
-## Commands
+Your project looks like this:
 
-### Build
+```
+├── CMakeLists.txt
+└── src/
+    └── main.cpp
+```
 
-This command takes an arbitrary amount of arguments. If no argument was
-given, it will try to build the _build_ target. Otherwise the first
-argument must be a valid target name. If the current file doesn't belong to
-any known build system, it will use language specific commands to build
-only this file alone.
+Open any file in the project and use the following command to initialize
+CMake. Optional arguments can be provided:
 
-Besides the target name, it takes an arbitrary amount of additional
-arguments, which will be passed directly to the build command. The caller
-must take care of quoting and escaping those arguments.
+```vim
+:BuildInit -DCMAKE_BUILD_TYPE=Release
+```
 
-### BuildInit
+Build, run and test the project by passing build targets to cmake:
 
-This command takes an arbitrary amount of arguments and will pass them
-directly to the build systems init command. The caller must take care of
-quoting and escaping those arguments. If the current build system has no
-init command, it will stop with a message.
+```vim
+:Build build
+:Build run
+:Build test
+:Build clean
+```
+
+**Note**: If `:Build` is run without any arguments it is equivalent to
+`:Build build`, which corresponds to the `all` target.
+
+## Autotools
+
+Your project looks like this:
+
+```
+├── configure
+├── Makefile.in
+├── LICENSE
+├── README
+└── src/
+    └── main.c
+    └── foo.h
+    └── foo.c
+```
+
+Open any file in the project and initialize the build using the following
+command. Optional configure flags can be provided:
+
+```vim
+:BuildInit --enable-gtk --without-foo --prefix="$HOME/.local"
+```
+
+Then run `make`:
+
+```vim
+:Build
+:Build test
+:Build clean
+:Build build -j8 --keep-going --dry-run
+```
+
+## Plain C files
+
+Build and run a standalone C file if no build system could be detected:
+
+```vim
+:Build
+:Build run
+:Build clean
+```
+
+Rebuild the current file with other CFLAGS:
+
+```vim
+:Build build -Wall -Wextra -Werror -pedantic
+```
+
+## Python, Bash and other scripting languages
+
+Run the current file if no build system could be detected:
+
+```vim
+:Build run
+```
