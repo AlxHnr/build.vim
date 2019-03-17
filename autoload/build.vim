@@ -25,7 +25,10 @@ let s:build_systems =
   \   'CMake':
   \   {
   \     'file'    : 'CMakeLists.txt',
-  \     'init'    : 'mkdir -p build/ && cd build/ && cmake ../',
+  \     'init'    : 'ln -sf build/compile_commands.json'
+  \               . '&& mkdir -p build/'
+  \               . '&& cd build/'
+  \               . '&& cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \     'command' : 'cmake --build ./build/ -- -j ' . s:jobs,
   \     'target-args':
   \     {
