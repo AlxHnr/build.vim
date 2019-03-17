@@ -20,6 +20,12 @@
 "       distribution.
 " }}}
 
+if executable('nproc')
+  let s:jobs = systemlist('nproc')[0]
+else
+  let s:jobs = 1
+endif
+
 " Informations about various builds systems. {{{
 let s:build_systems =
   \ {
@@ -27,7 +33,7 @@ let s:build_systems =
   \   {
   \     'file'    : 'configure',
   \     'init'    : './configure',
-  \     'command' : 'make',
+  \     'command' : 'make --jobs=' . s:jobs,
   \     'target-args':
   \     {
   \       'build' : 'all',
@@ -42,7 +48,7 @@ let s:build_systems =
   \   {
   \     'file'    : 'CMakeLists.txt',
   \     'init'    : 'mkdir -p build/ && cd build/ && cmake ../',
-  \     'command' : 'cmake --build ./build/ --target',
+  \     'command' : 'cmake --build ./build/ -- -j ' . s:jobs,
   \     'target-args':
   \     {
   \       'build' : 'all',
@@ -56,7 +62,7 @@ let s:build_systems =
   \   'Make':
   \   {
   \     'file'    : 'Makefile,makefile',
-  \     'command' : 'make',
+  \     'command' : 'make --jobs=' . s:jobs,
   \     'target-args':
   \     {
   \       'build' : 'all',
