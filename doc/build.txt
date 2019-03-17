@@ -93,34 +93,44 @@ below the current buffer. It was intended to be used through |g:build#make_cmd|.
 -------------------------------------------------------------------------------
 4.1 Define and customize build systems                          *g:build#systems*
 
-|build.vim| supports various build system by default. To add new build
-systems, or to override certain settings of the predefined build systems, you
-must create the dictionary |g:build#systems|. Here is an example:
+|build.vim| supports various build systems by default. To modify their
+behavior, override the desired entry in |g:build#systems|:
 >
   let g:build#systems =
-  \   'name':
+  \ {
+  \   'Make':
+  \   {
+  \     'command': 'make -j20',
+  \   },
+  \ }
+<
+New build systems can be added to |g:build#systems|:
+>
+  let g:build#systems =
+  \ {
+  \   'my-build-system':
   \   {
   \     'file'    : 'foo.json',
   \     'command' : 'foomake',
   \     'init'    : './configure',
   \     'target-args':
   \     {
-  \       'clean' : '--force clean',
-  \     }
-  \   }
+  \       'clean': 'purge --force',
+  \     },
+  \   },
+  \ }
 <
-Every build system must have a name, a file entry and a command entry. The
-file entry contains a comma separated list of filenames, describing the build
-file which should be searched. The command entry contains the command needed
-to invoke the build system. It will be executed in the directory of the build
-file. The "init" entry is optional and contains the command required to
-initialize the build.
+Every build system must have a name, a file entry and a command entry.
+The file entry contains a comma separated list of filenames, describing the
+build files to search. The command entry contains the command for running the
+build system. It will be run inside the directory relative to the build file.
+The init entry is optional and contains the command for initializing the
+build.
 
-The name of the target will be passed to the build command. E.g. if you want
-to run the clean target, the command will be called with "clean" as argument.
-To pass another argument instead, you need to define a replacement argument.
-This is done inside another dictionary associated with "target-args". See the
-example above.
+Arguments passed to :|Build| will be passed down to the underlying command. To
+replace such arguments, define a replacement in the `target-args` dictionary.
+In the example above, running `:Build clean` will run `foomake purge --force`
+instead.
 
 -------------------------------------------------------------------------------
 4.2 Define single file build commands                         *g:build#languages*
