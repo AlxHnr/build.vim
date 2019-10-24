@@ -1,4 +1,4 @@
-This plugin provides commands wrapping the build system to which the
+This plugin provides commands for using the build system to which the
 current file belongs. It searches from each files directory upwards for
 Makefiles and the like. Two commands are provided:
 
@@ -13,7 +13,7 @@ gcc.
 
 ## CMake
 
-Your project looks like this:
+Your project may look like this:
 
 ```
 ├── CMakeLists.txt
@@ -42,7 +42,7 @@ Build, run and test the project by passing build targets to cmake:
 
 ## Autotools
 
-Your project looks like this:
+Your project may look like this:
 
 ```
 ├── configure
