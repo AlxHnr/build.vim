@@ -159,13 +159,13 @@ endfunction " }}}
 
 " Returns the arguments for the given target. If no args exist in
 " g:build#systems and the fallback dict, it will return target itself.
-function! s:get_target_args(target) " {{{
+function! s:get_target_args(build_system, target) " {{{
   if exists('g:build#systems')
-    \ && s:has_target_args(g:build#systems, b:build_system_name, a:target)
-    let l:build_info = g:build#systems[b:build_system_name]
+    \ && s:has_target_args(g:build#systems, a:build_system.name, a:target)
+    let l:build_info = g:build#systems[a:build_system.name]
     return l:build_info['target-args'][a:target]
-  elseif s:has_target_args(s:build_systems, b:build_system_name, a:target)
-    return s:build_systems[b:build_system_name]['target-args'][a:target]
+  elseif s:has_target_args(s:build_systems, a:build_system.name, a:target)
+    return s:build_systems[a:build_system.name]['target-args'][a:target]
   else
     return a:target
   endif
@@ -202,11 +202,20 @@ function! s:build_lang_target(cmd_dict, target, extra_args) " {{{
   call s:run_in_env(expand('%:p:h'), l:cmd . ' ' . a:extra_args)
 endfunction " }}}
 
-" Setups some variables and changes the current directory.
-function! build#setup() " {{{
+" Returns a dictionary containing informations about the current build
+" system. If no build system could be found, an empty dictionary will be
+" returned instead.
+"
+" Example: When run in a buffer containing /some/path/CMakeLists.txt
+" Result:
+" {
+"   'name': 'CMake',
+"   'path': '/some/path',
+" }
+function! s:detect_buildsystem() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
-    return
+    return {}
   endif
 
   let l:known_systems = keys(s:build_systems)
@@ -221,7 +230,7 @@ function! build#setup() " {{{
       else
         echomsg "build.vim: the build system '" . l:bs_name
           \ . "' is incomplete"
-        return
+        return {}
       endif
     endfor
   endif
@@ -234,32 +243,32 @@ function! build#setup() " {{{
       for l:build_file in
         \ split(s:get_buildsys_item(l:build_name, 'file'), ',')
         if filereadable(l:current_path . '/' . l:build_file)
-          let b:build_path = l:current_path
-          let b:build_system_name = l:build_name
-          return
+          return {
+            \ 'name': l:build_name,
+            \ 'path': l:current_path,
+            \ }
         endif
       endfor
     endfor
   endwhile
-
-  unlet! b:build_path
-  unlet! b:build_system_name
 endfunction " }}}
 
 " Tries to initialize the current build system. Takes an arbitrary amount
 " of arguments, which will be passed to the initialisation command.
 function! build#init(...) " {{{
-  if !exists('b:build_system_name')
+  let l:build_system = s:detect_buildsystem()
+
+  if empty(l:build_system)
     echo "The current file doesn't belong to a known build system"
   elseif exists('g:build#systems')
-    \ && s:has_buildsys_item(g:build#systems, b:build_system_name, 'init')
-    let l:init = g:build#systems[b:build_system_name].init
-    call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
-  elseif s:has_buildsys_item(s:build_systems, b:build_system_name, 'init')
-    let l:init = s:build_systems[b:build_system_name].init
-    call s:run_in_env(b:build_path, l:init . ' ' . join(a:000))
+    \ && s:has_buildsys_item(g:build#systems, l:build_system.name, 'init')
+    let l:init = g:build#systems[l:build_system.name].init
+    call s:run_in_env(l:build_system.path, l:init . ' ' . join(a:000))
+  elseif s:has_buildsys_item(s:build_systems, l:build_system.name, 'init')
+    let l:init = s:build_systems[l:build_system.name].init
+    call s:run_in_env(l:build_system.path, l:init . ' ' . join(a:000))
   else
-    echo "'" . b:build_system_name . "' doesn't need to be initialized"
+    echo "'" . l:build_system.name . "' doesn't need to be initialized"
   endif
 endfunction " }}}
 
@@ -277,10 +286,13 @@ function! build#target(...) " {{{
     let l:extra_args = ''
   endif
 
-  if exists('b:build_system_name')
-    call s:run_in_env(b:build_path,
-      \ s:get_buildsys_item(b:build_system_name, 'command')
-      \ . ' ' . s:get_target_args(l:target) . ' ' . l:extra_args)
+  let l:build_system = s:detect_buildsystem()
+
+  if !empty(l:build_system)
+    call s:run_in_env(l:build_system.path,
+      \ s:get_buildsys_item(l:build_system.name, 'command')
+      \ . ' ' . s:get_target_args(l:build_system, l:target)
+      \ . ' ' . l:extra_args)
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif exists('g:build#languages')
@@ -298,7 +310,7 @@ function! build#run_makeprg() " {{{
   if has('nvim')
     let l:cmd = &l:makeprg
     rightbelow new
-    autocmd build WinLeave <buffer> wincmd p
+    autocmd WinLeave <buffer> wincmd p
     call termopen(l:cmd)
     startinsert
   else

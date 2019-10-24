@@ -7,10 +7,9 @@ CONTENTS                                                         *build-contents
     2.1 Build a specific target...........................................|Build|
     2.2 Initialize the current project................................|BuildInit|
   3. Functions..................................................|build-functions|
-    3.1 Search for known build systems..............................|build#setup|
-    3.2 Build the given target.....................................|build#target|
-    3.3 Initialize the current project...............................|build#init|
-    3.4 Run 'makeprg'.........................................|build#run_makeprg|
+    3.1 Build the given target.....................................|build#target|
+    3.2 Initialize the current project...............................|build#init|
+    3.3 Run 'makeprg'.........................................|build#run_makeprg|
   4. Options......................................................|build-options|
     4.1 Define and customize build systems......................|g:build#systems|
     4.2 Define single file build commands.....................|g:build#languages|
@@ -24,13 +23,6 @@ CONTENTS                                                         *build-contents
 belongs to a project with a build system or not. Thus it knows how to build
 and run it. This plugin works by searching from the files directory upwards,
 until it finds a known build file.
-
-Once a build file was found, the following variables will be set for the
-current buffer:
-
-*b:build_system_name* contains the name of the build system, e.g. "make".
-
-*b:build_path* contains the full path to the directory of the build file.
 
 ===============================================================================
 2. Commands                                                      *build-commands*
@@ -51,16 +43,7 @@ arguments.
 3. Functions                                                    *build-functions*
 
 -------------------------------------------------------------------------------
-3.1 Search for known build systems                                  *build#setup*
-
-The function |build#setup| takes no arguments and searches from the current
-files path upwards for a known build file. It will setup some local variables.
-Usually you don't need to call this function manually. In the case that no
-build file could be found, this function will do nothing but unset
-|b:build_system_name| and |b:build_path|.
-
--------------------------------------------------------------------------------
-3.2 Build the given target                                         *build#target*
+3.1 Build the given target                                         *build#target*
 
 The function |build#target| takes an arbitrary amount of arguments. If no
 argument was given, it will try to build the "build" target. Otherwise the
@@ -74,7 +57,7 @@ which will be passed directly to the build command. The caller must take care
 of quoting and escaping those arguments.
 
 -------------------------------------------------------------------------------
-3.3 Initialize the current project                                   *build#init*
+3.2 Initialize the current project                                   *build#init*
 
 The function |build#init| takes an arbitrary amount of arguments and will pass
 them directly to the build systems init command. The caller must take care of
@@ -82,7 +65,7 @@ quoting and escaping those arguments. If the current build system has no init
 command, it will stop with a message.
 
 -------------------------------------------------------------------------------
-3.4 Run 'makeprg'                                             *build#run_makeprg*
+3.3 Run 'makeprg'                                             *build#run_makeprg*
 
 In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a terminal
 below the current buffer. It was intended to be used through |g:build#make_cmd|.
