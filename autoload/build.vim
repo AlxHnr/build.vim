@@ -225,6 +225,12 @@ function! s:detect_buildsystem() " {{{
   endwhile
 endfunction " }}}
 
+" Convert the given string list to a single string to be appended to shell
+" commands.
+function! s:to_shellescaped_string(list) " {{{
+  return join(map(copy(a:list), {index, value -> shellescape(value)}))
+endfunction " }}}
+
 " Tries to initialize the current build system. Takes an arbitrary amount
 " of arguments, which will be passed to the initialisation command.
 function! build#init(...) " {{{
@@ -235,10 +241,12 @@ function! build#init(...) " {{{
   elseif exists('g:build#systems')
     \ && s:has_buildsys_item(g:build#systems, l:build_system.name, 'init')
     let l:init = g:build#systems[l:build_system.name].init
-    call s:run_in_env(l:build_system.path, l:init . ' ' . join(a:000))
+    call s:run_in_env(l:build_system.path, l:init
+      \ . ' ' . s:to_shellescaped_string(a:000))
   elseif s:has_buildsys_item(s:build_systems, l:build_system.name, 'init')
     let l:init = s:build_systems[l:build_system.name].init
-    call s:run_in_env(l:build_system.path, l:init . ' ' . join(a:000))
+    call s:run_in_env(l:build_system.path, l:init
+      \ . ' ' . s:to_shellescaped_string(a:000))
   else
     echo "'" . l:build_system.name . "' doesn't need to be initialized"
   endif
@@ -249,8 +257,8 @@ endfunction " }}}
 function! build#target(...) " {{{
   " Handle optional arguments.
   if a:0
-    let l:target = a:1
-    let l:extra_args = join(a:000[1:])
+    let l:target = shellescape(a:1)
+    let l:extra_args = s:to_shellescaped_string(a:000[1:])
   else
     let l:target = ''
     let l:extra_args = ''
@@ -272,7 +280,7 @@ function! build#target(...) " {{{
   elseif s:has_lang_target(s:language_cmds, l:target)
     call s:build_lang_target(s:language_cmds, l:target, l:extra_args)
   else
-    echo 'Unable to ' . l:target . " '" . expand('%:t') . "'"
+    echo 'Unable to ' . l:target . ' ' . expand('%:t')
   endif
 endfunction " }}}
 

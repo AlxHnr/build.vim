@@ -32,15 +32,13 @@ until it finds a known build file.
 
 Run the current build system with the specified optional arguments. If the
 current file does not belong to a build system, it will be build using
-associated compilers. See |build#target| for more informations. The caller
-must take care of quoting and escaping the arguments.
+associated compilers. See |build#target| for more informations.
 
 -------------------------------------------------------------------------------
 2.2 Initialize the current project                                    *BuildInit*
 
 Initialize the current build system with the given optional arguments. See
-|build#init|. The caller must take care of quoting and escaping the
-arguments.
+|build#init|.
 
 ===============================================================================
 3. Functions                                                    *build-functions*
@@ -53,15 +51,12 @@ will be passed directly to the underlying build command. If the current
 file doesn't belong to any known build system, it will use language
 specific commands to build it. See |build#languages|.
 
-The caller must take care of quoting and escaping those arguments.
-
 -------------------------------------------------------------------------------
 3.2 Initialize the current project                                   *build#init*
 
 The function |build#init| takes an arbitrary amount of arguments and will pass
-them directly to the build systems init command. The caller must take care of
-quoting and escaping those arguments. If the current build system has no init
-command, it will stop with a message.
+them directly to the build systems init command. If the current build
+system has no init command, it will stop with a message.
 
 -------------------------------------------------------------------------------
 3.3 Run 'makeprg'                                             *build#run_makeprg*
