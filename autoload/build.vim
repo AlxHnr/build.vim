@@ -50,67 +50,67 @@ let s:language_cmds =
   \ {
   \   'c':
   \   {
-  \     'clean' : 'rm "%HEAD%"',
-  \     'build' : 'gcc -std=c11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm %HEAD%',
+  \     'build' : 'gcc -std=c11 -Wall -Wextra %NAME% -o %HEAD%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'cpp':
   \   {
-  \     'clean' : 'rm "%HEAD%"',
-  \     'build' : 'g++ -std=c++11 -Wall -Wextra "%NAME%" -o "%HEAD%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm %HEAD%',
+  \     'build' : 'g++ -std=c++11 -Wall -Wextra %NAME% -o %HEAD%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'd':
   \   {
-  \     'clean' : 'rm "%HEAD%" "%HEAD%.o"',
-  \     'build' : 'dmd "%NAME%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm %HEAD% %HEAD%.o',
+  \     'build' : 'dmd %NAME%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'haskell':
   \   {
-  \     'clean' : 'rm "%HEAD%"{,.hi,.o}',
-  \     'build' : 'ghc "%NAME%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm %HEAD%{,.hi,.o}',
+  \     'build' : 'ghc %NAME%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'java':
   \   {
-  \     'clean'  : 'rm "%HEAD%.class"',
-  \     'build'  : 'javac -Xlint "%NAME%"',
-  \     'run'    : 'java "%HEAD%"',
+  \     'clean'  : 'rm %HEAD%.class',
+  \     'build'  : 'javac -Xlint %NAME%',
+  \     'run'    : 'java %HEAD%',
   \   },
   \   'nim':
   \   {
-  \     'clean' : 'rm -rf nimcache "%HEAD%"',
-  \     'build' : 'nim compile "%NAME%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm -rf nimcache %HEAD%',
+  \     'build' : 'nim compile %NAME%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'ocaml':
   \   {
-  \     'run' : 'ocaml "%NAME%"',
+  \     'run' : 'ocaml %NAME%',
   \   },
   \   'racket':
   \   {
-  \     'run'   : 'racket "%NAME%"',
-  \     'build' : 'raco make -v "%NAME%"',
+  \     'run'   : 'racket %NAME%',
+  \     'build' : 'raco make -v %NAME%',
   \     'clean' : 'rm compiled/*_rkt.{dep,zo}; rm -rf compiled/drracket; rmdir compiled',
   \   },
   \   'rust':
   \   {
-  \     'clean' : 'rm "%HEAD%"',
-  \     'build' : 'rustc "%NAME%"',
-  \     'run'   : './"%HEAD%"',
+  \     'clean' : 'rm %HEAD%',
+  \     'build' : 'rustc %NAME%',
+  \     'run'   : './%HEAD%',
   \   },
   \   'scala':
   \   {
-  \     'clean'  : 'rm "%HEAD%"*.class',
-  \     'build'  : 'scalac "%NAME%"',
-  \     'run'    : 'scala "%HEAD%"',
+  \     'clean'  : 'rm %HEAD%*.class',
+  \     'build'  : 'scalac %NAME%',
+  \     'run'    : 'scala %HEAD%',
   \   },
   \   'tex':
   \   {
-  \     'clean'  : 'rm "%HEAD%".{aux,log,nav,out,pdf,snm,toc}',
-  \     'build'  : 'pdflatex -file-line-error -halt-on-error "%NAME%"',
-  \     'run'    : 'xdg-open "%HEAD%.pdf"',
+  \     'clean'  : 'rm %HEAD%.{aux,log,nav,out,pdf,snm,toc}',
+  \     'build'  : 'pdflatex -file-line-error -halt-on-error %NAME%',
+  \     'run'    : 'xdg-open %HEAD%.pdf',
   \   },
   \ }
 
@@ -120,7 +120,7 @@ let s:scripting_languages =
 
 for s:language in split(s:scripting_languages, ',')
   let s:language_cmds[s:language] =
-    \ { 'run' : 'chmod +x "%NAME%" && ./"%NAME%"' }
+    \ { 'run' : 'chmod +x %NAME% && ./%NAME%' }
 endfor
 
 unlet s:scripting_languages s:language
@@ -154,7 +154,7 @@ endfunction " }}}
 " Example:
 "   s:get_lang_cmd('c', 'run')
 " Returns:
-"   './"%HEAD%"'
+"   './%HEAD%'
 function! s:get_lang_cmd(language, cmd_name) " {{{
   if exists('g:build#languages')
     \ && has_key(g:build#languages, a:language)
@@ -179,17 +179,27 @@ function! s:run_in_env(dir, cmd) " {{{
   let &l:makeprg = l:old_makeprg
 endfunction " }}}
 
+" Expands various placeholders in the given string and escapes it to
+" be appended to shell commands.
+"
+" Example:
+"   s:prepare_cmd_for_shell('This is %NAME%')
+" Returns:
+"   "This is 'main.cpp'"
+function! s:prepare_cmd_for_shell(str) " {{{
+  let l:str = a:str
+  let l:str = substitute(l:str, '%PATH%', escape(shellescape(expand('%:p:h')), '\'), 'g')
+  let l:str = substitute(l:str, '%NAME%', escape(shellescape(expand('%:t')), '\'),   'g')
+  let l:str = substitute(l:str, '%HEAD%', escape(shellescape(expand('%:t:r')), '\'), 'g')
+  return l:str
+endfunction " }}}
+
 " Builds the target for the current file with rules from the given dict.
 " This function expects a valid dict with all entries needed to build the
 " current file. It takes an extra argument string for the build command.
 function! s:build_lang_target(cmd, extra_args) " {{{
-  " Substitute all placeholders.
-  let l:cmd = a:cmd
-  let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
-  let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
-  let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
-
-  call s:run_in_env(expand('%:p:h'), l:cmd . ' ' . a:extra_args)
+  call s:run_in_env(expand('%:p:h'),
+    \ s:prepare_cmd_for_shell(a:cmd) . ' ' . a:extra_args)
 endfunction " }}}
 
 " Returns a dictionary containing informations about the current build
