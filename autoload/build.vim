@@ -147,11 +147,25 @@ function! s:get_buildsys_item(bs_name, key) " {{{
   endif
 endfunction " }}}
 
-" Return true, if the given dict contains the specified build target for
-" the current file type.
-function! s:has_lang_target(cmd_dict, target) " {{{
-  return has_key(a:cmd_dict, &filetype)
-    \ && has_key(a:cmd_dict[&filetype], a:target)
+" Return the specified command for the given language. Will return 0 if the
+" requested item doesn't exist. It will first look into g:build#languages
+" and then fallback to s:language_cmds.
+"
+" Example:
+"   s:get_lang_cmd('c', 'run')
+" Returns:
+"   './"%HEAD%"'
+function! s:get_lang_cmd(language, cmd_name) " {{{
+  if exists('g:build#languages')
+    \ && has_key(g:build#languages, a:language)
+    \ && has_key(g:build#languages[a:language], a:cmd_name)
+    return g:build#languages[a:language][a:cmd_name]
+  elseif has_key(s:language_cmds, a:language)
+  \ && has_key(s:language_cmds[a:language], a:cmd_name)
+    return s:language_cmds[a:language][a:cmd_name]
+  else
+    return 0
+  endif
 endfunction " }}}
 
 " Setups makeprg, changes into the given dir and runs g:build#make_cmd
@@ -168,9 +182,9 @@ endfunction " }}}
 " Builds the target for the current file with rules from the given dict.
 " This function expects a valid dict with all entries needed to build the
 " current file. It takes an extra argument string for the build command.
-function! s:build_lang_target(cmd_dict, target, extra_args) " {{{
+function! s:build_lang_target(cmd, extra_args) " {{{
   " Substitute all placeholders.
-  let l:cmd = a:cmd_dict[&filetype][a:target]
+  let l:cmd = a:cmd
   let l:cmd = substitute(l:cmd, '%PATH%', expand('%:p:h'), 'g')
   let l:cmd = substitute(l:cmd, '%NAME%', expand('%:t'),   'g')
   let l:cmd = substitute(l:cmd, '%HEAD%', expand('%:t:r'), 'g')
@@ -259,7 +273,7 @@ endfunction " }}}
 function! build#target(...) " {{{
   " Handle optional arguments.
   if a:0
-    let l:target = shellescape(a:1)
+    let l:target = a:1
     let l:extra_args = s:to_shellescaped_string(a:000[1:])
   else
     let l:target = ''
@@ -271,18 +285,19 @@ function! build#target(...) " {{{
   if !empty(l:build_system)
     call s:run_in_env(l:build_system.path,
       \ s:get_buildsys_item(l:build_system.name, 'command')
-      \ . ' ' . l:target . ' ' . l:extra_args)
+      \ . ' ' . shellescape(l:target) . ' ' . l:extra_args)
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif strlen(l:target) == 0
     echo 'No build target specified'
-  elseif exists('g:build#languages')
-    \ && s:has_lang_target(g:build#languages, l:target)
-    call s:build_lang_target(g:build#languages, l:target, l:extra_args)
-  elseif s:has_lang_target(s:language_cmds, l:target)
-    call s:build_lang_target(s:language_cmds, l:target, l:extra_args)
   else
-    echo 'Unable to ' . l:target . ' ' . expand('%:t')
+    let l:lang_cmd = s:get_lang_cmd(&filetype, l:target)
+
+    if !empty(lang_cmd)
+      call s:build_lang_target(l:lang_cmd, l:extra_args)
+    else
+      echo 'Unable to ' . l:target . ' ' . expand('%:t')
+    endif
   endif
 endfunction " }}}
 
