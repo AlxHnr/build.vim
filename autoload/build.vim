@@ -49,6 +49,15 @@ let s:build_systems =
   \       'build' : 'all',
   \     },
   \   },
+  \   'Maven':
+  \   {
+  \     'file'    : 'pom.xml',
+  \     'command' : 'mvn',
+  \     'target-args':
+  \     {
+  \       'build' : 'compile',
+  \     },
+  \   },
   \ }
 " }}}
 
