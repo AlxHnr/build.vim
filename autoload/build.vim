@@ -306,7 +306,7 @@ function! build#target(...) " {{{
     if !empty(lang_cmd)
       call s:build_lang_target(l:lang_cmd, l:extra_args)
     else
-      echo 'Unable to ' . l:target . ' ' . expand('%:t')
+      echo 'Unable to run "' . l:target . '" on "' . expand('%:t') . '"'
     endif
   endif
 endfunction " }}}
@@ -320,16 +320,47 @@ function! build#info() " {{{
 
     echo 'Build system:      ' . l:build_system.name
     echo 'Project directory: ' . l:build_system.path
-    echo
+    echo '-'
     echo 'Build command:     ' . l:command
 
     let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
     if !empty(l:init_cmd)
       echo 'Init command:      ' . l:init_cmd
     endif
-  else
-    echo 'The current file does not belong to any known build system'
+
+    echo '-'
+    return
   endif
+
+  echo 'The current file does not belong to any known build system.'
+
+  let l:global_cmds = {}
+  if exists('g:build#languages') && has_key(g:build#languages, &filetype)
+    let l:global_cmds = g:build#languages[&filetype]
+  endif
+
+  if empty(l:global_cmds) && !has_key(s:language_cmds, &filetype)
+    return
+  endif
+
+  echo 'Here is a list of build targets and their associated commands'
+  echo 'for the current file:'
+  echo '-'
+
+  for l:target in keys(l:global_cmds)
+    echo l:target . ': ' . s:prepare_cmd_for_shell(l:global_cmds[l:target])
+  endfor
+
+  if has_key(s:language_cmds, &filetype)
+    for l:target in keys(s:language_cmds[&filetype])
+      if !has_key(l:global_cmds, l:target)
+        echo l:target . ': '
+          \ . s:prepare_cmd_for_shell(s:language_cmds[&filetype][l:target])
+      endif
+    endfor
+  endif
+
+  echo '-'
 endfunction " }}}
 
 " Runs 'makeprg'.
