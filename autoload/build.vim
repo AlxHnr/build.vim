@@ -12,10 +12,6 @@ let s:build_systems =
   \     'file'    : 'configure',
   \     'init'    : './configure',
   \     'command' : 'make --jobs=' . s:jobs,
-  \     'target-args':
-  \     {
-  \       'build' : 'all',
-  \     },
   \   },
   \   'Cargo':
   \   {
@@ -30,10 +26,6 @@ let s:build_systems =
   \               . '&& cd build/'
   \               . '&& cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \     'command' : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \     'target-args':
-  \     {
-  \       'build' : 'all',
-  \     },
   \   },
   \   'DUB':
   \   {
@@ -44,19 +36,11 @@ let s:build_systems =
   \   {
   \     'file'    : 'Makefile,makefile',
   \     'command' : 'make --jobs=' . s:jobs,
-  \     'target-args':
-  \     {
-  \       'build' : 'all',
-  \     },
   \   },
   \   'Maven':
   \   {
   \     'file'    : 'pom.xml',
   \     'command' : 'mvn',
-  \     'target-args':
-  \     {
-  \       'build' : 'compile',
-  \     },
   \   },
   \ }
 " }}}
@@ -156,27 +140,6 @@ function! s:get_buildsys_item(bs_name, key) " {{{
     return g:build#systems[a:bs_name][a:key]
   else
     return s:build_systems[a:bs_name][a:key]
-  endif
-endfunction " }}}
-
-" Returns true, if a target argument exists for the given target in the
-" given build system dict.
-function! s:has_target_args(build_systems, bs_name, target) " {{{
-  return s:has_buildsys_item(a:build_systems, a:bs_name, 'target-args')
-  \ && has_key(a:build_systems[a:bs_name]['target-args'], a:target)
-endfunction " }}}
-
-" Returns the arguments for the given target. If no args exist in
-" g:build#systems and the fallback dict, it will return target itself.
-function! s:get_target_args(build_system, target) " {{{
-  if exists('g:build#systems')
-    \ && s:has_target_args(g:build#systems, a:build_system.name, a:target)
-    let l:build_info = g:build#systems[a:build_system.name]
-    return l:build_info['target-args'][a:target]
-  elseif s:has_target_args(s:build_systems, a:build_system.name, a:target)
-    return s:build_systems[a:build_system.name]['target-args'][a:target]
-  else
-    return a:target
   endif
 endfunction " }}}
 
@@ -281,17 +244,15 @@ function! build#init(...) " {{{
   endif
 endfunction " }}}
 
-" Builds the current project or file. The first argument is optional, but
-" if specified, it must be a valid target name. If its omitted, it will
-" fallback to 'build'. All other arguments will be passed directly to the
-" build command.
+" Build the current project or file. All optional arguments will be passed
+" directly to the build command.
 function! build#target(...) " {{{
   " Handle optional arguments.
   if a:0
     let l:target = a:1
     let l:extra_args = join(a:000[1:])
   else
-    let l:target = 'build'
+    let l:target = ''
     let l:extra_args = ''
   endif
 
@@ -300,10 +261,11 @@ function! build#target(...) " {{{
   if !empty(l:build_system)
     call s:run_in_env(l:build_system.path,
       \ s:get_buildsys_item(l:build_system.name, 'command')
-      \ . ' ' . s:get_target_args(l:build_system, l:target)
-      \ . ' ' . l:extra_args)
+      \ . ' ' . l:target . ' ' . l:extra_args)
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
+  elseif strlen(l:target) == 0
+    echo 'No build target specified'
   elseif exists('g:build#languages')
     \ && s:has_lang_target(g:build#languages, l:target)
     call s:build_lang_target(g:build#languages, l:target, l:extra_args)

@@ -28,17 +28,15 @@ CMake. Optional arguments can be provided:
 :BuildInit -DCMAKE_BUILD_TYPE=Release
 ```
 
-Build, run and test the project by passing build targets to cmake:
+The `:Build` command runs `make` inside the build directory. It takes
+optional arguments which will be passed directly to `make`:
 
 ```vim
-:Build build
-:Build run
+:Build
+:Build all
 :Build test
 :Build clean
 ```
-
-**Note**: If `:Build` is run without any arguments it is equivalent to
-`:Build build`, which corresponds to the `all` target.
 
 ## Autotools
 
@@ -55,33 +53,35 @@ Your project may look like this:
     └── foo.c
 ```
 
-Open any file in the project and initialize the build using the following
+Open any file in the project and configure the build using the following
 command. Optional configure flags can be provided:
 
 ```vim
 :BuildInit --enable-gtk --without-foo --prefix="$HOME/.local"
 ```
 
-Then run `make`:
+Then run `make` using the `:Build` command:
 
 ```vim
 :Build
 :Build test
 :Build clean
-:Build build -j8 --keep-going --dry-run
+:Build -j8 --keep-going --dry-run
 ```
 
 ## Plain C files
 
-Build and run a standalone C file if no build system could be detected:
+If the current file does not belong to a build system, it can be compiled
+using the `:Build` command. This plugin defines three build targets for C
+files:
 
 ```vim
-:Build
+:Build build
 :Build run
 :Build clean
 ```
 
-Rebuild the current file with other CFLAGS:
+Pass custom arguments to the compiler:
 
 ```vim
 :Build build -Wall -Wextra -Werror -pedantic
@@ -89,7 +89,8 @@ Rebuild the current file with other CFLAGS:
 
 ## Python, Bash and other scripting languages
 
-Run the current file if no build system could be detected:
+For some files which don't belong to a build system, the `run` target will
+be defined:
 
 ```vim
 :Build run

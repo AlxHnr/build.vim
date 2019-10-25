@@ -45,16 +45,12 @@ arguments.
 -------------------------------------------------------------------------------
 3.1 Build the given target                                         *build#target*
 
-The function |build#target| takes an arbitrary amount of arguments. If no
-argument was given, it will try to build the "build" target. Otherwise the
-first argument must be a valid target name. It will be passed directly to the
-build command, unless a replacement argument was defined in |g:build#systems|.
-If the current file doesn't belong to any known build system, it will use
-language specific commands to build it. See |build#languages|.
+The function |build#target| takes an arbitrary amount of arguments. They
+will be passed directly to the current build command. If the current file
+doesn't belong to any known build system, it will use language specific
+commands to build it. See |build#languages|.
 
-Besides the target name, it takes an arbitrary amount of additional arguments,
-which will be passed directly to the build command. The caller must take care
-of quoting and escaping those arguments.
+The caller must take care of quoting and escaping those arguments.
 
 -------------------------------------------------------------------------------
 3.2 Initialize the current project                                   *build#init*
@@ -96,10 +92,6 @@ New build systems can be added to |g:build#systems|:
   \     'file'    : 'foo.json',
   \     'command' : 'foomake',
   \     'init'    : './configure',
-  \     'target-args':
-  \     {
-  \       'clean': 'purge --force',
-  \     },
   \   },
   \ }
 <
@@ -109,11 +101,6 @@ build files to search. The command entry contains the command for running the
 build system. It will be run inside the directory relative to the build file.
 The init entry is optional and contains the command for initializing the
 build.
-
-Arguments passed to :|Build| will be passed down to the underlying command. To
-replace such arguments, define a replacement in the `target-args` dictionary.
-In the example above, running `:Build clean` will run `foomake purge --force`
-instead.
 
 -------------------------------------------------------------------------------
 4.2 Define single file build commands                         *g:build#languages*
