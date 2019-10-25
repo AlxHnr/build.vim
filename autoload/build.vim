@@ -22,9 +22,9 @@ let s:build_systems =
   \   {
   \     'file'    : 'CMakeLists.txt',
   \     'init'    : 'ln -sf build/compile_commands.json'
-  \               . '&& mkdir -p build/'
-  \               . '&& cd build/'
-  \               . '&& cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
+  \               . ' && mkdir -p build/'
+  \               . ' && cd build/'
+  \               . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \     'command' : 'cmake --build ./build/ -- -j ' . s:jobs,
   \   },
   \   'DUB':
@@ -283,6 +283,27 @@ function! build#target(...) " {{{
     call s:build_lang_target(s:language_cmds, l:target, l:extra_args)
   else
     echo 'Unable to ' . l:target . ' ' . expand('%:t')
+  endif
+endfunction " }}}
+
+" Print build informations about the current file.
+function! build#info() " {{{
+  let l:build_system = s:detect_buildsystem()
+
+  if !empty(l:build_system)
+    let l:command = s:get_buildsys_item(l:build_system.name, 'command')
+
+    echo 'Build system:      ' . l:build_system.name
+    echo 'Project directory: ' . l:build_system.path
+    echo
+    echo 'Build command:     ' . l:command
+
+    let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
+    if !empty(l:init_cmd)
+      echo 'Init command:      ' . l:init_cmd
+    endif
+  else
+    echo 'The current file does not belong to any known build system'
   endif
 endfunction " }}}
 

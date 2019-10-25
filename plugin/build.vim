@@ -9,3 +9,4 @@ endif
 
 command! -nargs=* Build call build#target(<f-args>)
 command! -nargs=* BuildInit call build#init(<f-args>)
+command! BuildInfo call build#info()
