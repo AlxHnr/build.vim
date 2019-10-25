@@ -30,13 +30,16 @@ until it finds a known build file.
 -------------------------------------------------------------------------------
 2.1 Build a specific target                                               *Build*
 
-See |build#target| for more informations. The caller must take care of quoting
-and escaping the arguments.
+Run the current build system with the specified optional arguments. If the
+current file does not belong to a build system, it will be build using
+associated compilers. See |build#target| for more informations. The caller
+must take care of quoting and escaping the arguments.
 
 -------------------------------------------------------------------------------
 2.2 Initialize the current project                                    *BuildInit*
 
-See |build#init|. The caller must take care of quoting and escaping the
+Initialize the current build system with the given optional arguments. See
+|build#init|. The caller must take care of quoting and escaping the
 arguments.
 
 ===============================================================================
@@ -46,9 +49,9 @@ arguments.
 3.1 Build the given target                                         *build#target*
 
 The function |build#target| takes an arbitrary amount of arguments. They
-will be passed directly to the current build command. If the current file
-doesn't belong to any known build system, it will use language specific
-commands to build it. See |build#languages|.
+will be passed directly to the underlying build command. If the current
+file doesn't belong to any known build system, it will use language
+specific commands to build it. See |build#languages|.
 
 The caller must take care of quoting and escaping those arguments.
 
@@ -63,8 +66,9 @@ command, it will stop with a message.
 -------------------------------------------------------------------------------
 3.3 Run 'makeprg'                                             *build#run_makeprg*
 
-In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a terminal
-below the current buffer. It was intended to be used through |g:build#make_cmd|.
+In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a split
+terminal window below the current buffer. It was intended to be used
+through |g:build#make_cmd|.
 
 ===============================================================================
 4. Options                                                        *build-options*
@@ -96,11 +100,11 @@ New build systems can be added to |g:build#systems|:
   \ }
 <
 Every build system must have a name, a file entry and a command entry.
-The file entry contains a comma separated list of filenames, describing the
-build files to search. The command entry contains the command for running the
-build system. It will be run inside the directory relative to the build file.
-The init entry is optional and contains the command for initializing the
-build.
+The file entry contains a comma-separated list of filenames, describing the
+build files to search for. The command entry contains the command for
+running the build system. It will be run in the directory containing the
+build file. The init entry is optional and contains the command for
+initializing the build.
 
 -------------------------------------------------------------------------------
 4.2 Define single file build commands                         *g:build#languages*
