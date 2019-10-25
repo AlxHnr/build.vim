@@ -126,20 +126,24 @@ endfor
 unlet s:scripting_languages s:language
 " }}}
 
-function! s:has_buildsys_item(build_systems, bs_name, key) " {{{
-  return has_key(a:build_systems, a:bs_name)
-    \ && has_key(a:build_systems[a:bs_name], a:key)
-endfunction " }}}
-
-" Gets the value associated with 'key' for the given build system. It
-" checks g:build#systems first, then searches the item in the fallback
-" build system dict, which must contain the item.
+" Return the specified key for the given build system. Will return 0 if the
+" requested item doesn't exist. It will first look into g:build#systems and
+" then fallback to s:build_systems.
+"
+" Example:
+"   s:get_buildsys_item('CMake', 'file')
+" Returns:
+"   'CMakeLists.txt'
 function! s:get_buildsys_item(bs_name, key) " {{{
   if exists('g:build#systems')
-    \ && s:has_buildsys_item(g:build#systems, a:bs_name, a:key)
+    \ && has_key(g:build#systems, a:bs_name)
+    \ && has_key(g:build#systems[a:bs_name], a:key)
     return g:build#systems[a:bs_name][a:key]
-  else
+  elseif has_key(s:build_systems, a:bs_name)
+    \ && has_key(s:build_systems[a:bs_name], a:key)
     return s:build_systems[a:bs_name][a:key]
+  else
+    return 0
   endif
 endfunction " }}}
 
@@ -238,14 +242,12 @@ function! build#init(...) " {{{
 
   if empty(l:build_system)
     echo "The current file doesn't belong to a known build system"
-  elseif exists('g:build#systems')
-    \ && s:has_buildsys_item(g:build#systems, l:build_system.name, 'init')
-    let l:init = g:build#systems[l:build_system.name].init
-    call s:run_in_env(l:build_system.path, l:init
-      \ . ' ' . s:to_shellescaped_string(a:000))
-  elseif s:has_buildsys_item(s:build_systems, l:build_system.name, 'init')
-    let l:init = s:build_systems[l:build_system.name].init
-    call s:run_in_env(l:build_system.path, l:init
+    return
+  endif
+
+  let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
+  if !empty(l:init_cmd)
+    call s:run_in_env(l:build_system.path, l:init_cmd
       \ . ' ' . s:to_shellescaped_string(a:000))
   else
     echo "'" . l:build_system.name . "' doesn't need to be initialized"
