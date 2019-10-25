@@ -284,9 +284,11 @@ function! build#target(...) " {{{
   " Handle optional arguments.
   if a:0
     let l:target = a:1
+    let l:escaped_target = shellescape(l:target)
     let l:extra_args = s:to_shellescaped_string(a:000[1:])
   else
     let l:target = ''
+    let l:escaped_target = ''
     let l:extra_args = ''
   endif
 
@@ -295,7 +297,7 @@ function! build#target(...) " {{{
   if !empty(l:build_system)
     call s:run_in_env(l:build_system.path,
       \ s:get_buildsys_item(l:build_system.name, 'command')
-      \ . ' ' . shellescape(l:target) . ' ' . l:extra_args)
+      \ . ' ' . l:escaped_target . ' ' . l:extra_args)
   elseif !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
   elseif strlen(l:target) == 0
