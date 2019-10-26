@@ -217,7 +217,7 @@ endfunction " }}}
 "   'name': 'CMake',
 "   'path': '/some/path',
 " }
-function! s:detect_buildsystem() " {{{
+function! build#get_current_buildsystem() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
     return {}
@@ -267,7 +267,7 @@ endfunction " }}}
 " Tries to initialize the current build system. Takes an arbitrary amount
 " of arguments, which will be passed to the initialisation command.
 function! build#init(...) " {{{
-  let l:build_system = s:detect_buildsystem()
+  let l:build_system = build#get_current_buildsystem()
 
   if empty(l:build_system)
     echo "The current file doesn't belong to a known build system"
@@ -297,7 +297,7 @@ function! build#target(...) " {{{
     let l:extra_args = ''
   endif
 
-  let l:build_system = s:detect_buildsystem()
+  let l:build_system = build#get_current_buildsystem()
 
   if !empty(l:build_system)
     call s:run_in_env(l:build_system.path,
@@ -320,7 +320,7 @@ endfunction " }}}
 
 " Print build informations about the current file.
 function! build#info() " {{{
-  let l:build_system = s:detect_buildsystem()
+  let l:build_system = build#get_current_buildsystem()
 
   if !empty(l:build_system)
     let l:command = s:get_buildsys_item(l:build_system.name, 'command')

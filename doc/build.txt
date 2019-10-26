@@ -11,6 +11,7 @@ CONTENTS                                                         *build-contents
     3.1 Build the given target.....................................|build#target|
     3.2 Initialize the current project...............................|build#init|
     3.3 Run 'makeprg'.........................................|build#run_makeprg|
+    3.4 Get current buildsystem name and path.....|build#get_current_buildsystem|
   4. Options......................................................|build-options|
     4.1 Define and customize build systems......................|g:build#systems|
     4.2 Define single file build commands.....................|g:build#languages|
@@ -72,6 +73,21 @@ In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a split
 terminal window below the current buffer. It was intended to be used
 through |g:build#make_cmd|.
 
+-------------------------------------------------------------------------------
+3.4 Get current buildsystem name and path         *build#get_current_buildsystem*
+
+Returns a |Dictionary| with the name of the current build system and the
+path to the directory containing the build file. This function returns {}
+if no buildsystem could be found.
+
+Example result for calling this function from a buffer which contains the
+file `/some/path/CMakeLists.txt`:
+>
+  {
+    'name': 'CMake',
+    'path': '/some/path',
+  }
+<
 ===============================================================================
 4. Options                                                        *build-options*
 
