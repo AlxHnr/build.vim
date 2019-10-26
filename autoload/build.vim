@@ -339,7 +339,7 @@ function! build#info() " {{{
     return
   endif
 
-  echo 'The current file does not belong to any known build system.'
+  echo 'The current file does not belong to any known build systems.'
 
   let l:global_cmds = {}
   if exists('g:build#languages') && has_key(g:build#languages, &filetype)

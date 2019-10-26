@@ -6,9 +6,9 @@ Makefiles and the like. These commands are provided:
 * **:BuildInit** - Initialize/configure a build
 * **:BuildInfo** - Print build informations for the current file
 
-**Note**: If the current file doesn't belong to any known build system, it
-will be build using associated compilers. E.g. C files will be build using
-gcc.
+**Note**: If the current file does not belong to any known build systems,
+it will be build using associated compilers. E.g. C files will be build
+using gcc.
 
 # Usage Examples
 

@@ -55,7 +55,7 @@ file.
 
 The function |build#target| takes an arbitrary amount of arguments. They
 will be passed directly to the underlying build command. If the current
-file doesn't belong to any known build system, it will use language
+file doesn't belong to any known build systems, it will use language
 specific commands to build it. See |build#languages|.
 
 -------------------------------------------------------------------------------
