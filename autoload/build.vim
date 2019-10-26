@@ -171,10 +171,15 @@ endfunction " }}}
 " Setups makeprg, changes into the given dir and runs g:build#make_cmd
 " inside it. It restores the previous makeprg and path afterwards.
 function! s:run_in_env(dir, cmd) " {{{
+  let l:make_cmd = 'call build#run_makeprg()'
+  if exists('g:build#make_cmd')
+    let l:make_cmd = g:build#make_cmd
+  endif
+
   let l:old_makeprg = &l:makeprg
   let &l:makeprg = a:cmd
   execute 'lchdir! ' . escape(a:dir, '\ ')
-  execute g:build#make_cmd
+  execute l:make_cmd
   lchdir! -
   let &l:makeprg = l:old_makeprg
 endfunction " }}}
