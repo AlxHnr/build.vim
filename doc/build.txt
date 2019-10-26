@@ -69,7 +69,7 @@ system has no init command, it will stop with a message.
 -------------------------------------------------------------------------------
 3.3 Run 'makeprg'                                             *build#run_makeprg*
 
-In Vim this function calls lmake!. In Neovim it runs 'makeprg' in a split
+In Vim this function calls |lmake|!. In Neovim it runs 'makeprg' in a split
 terminal window below the current buffer. It was intended to be used
 through |g:build#make_cmd|.
 
