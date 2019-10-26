@@ -1,9 +1,10 @@
 This plugin provides commands for using the build system to which the
 current file belongs. It searches from each files directory upwards for
-Makefiles and the like. Two commands are provided:
+Makefiles and the like. These commands are provided:
 
-* **:Build** - To build/run a target
-* **:BuildInit** - To initialize/configure builds
+* **:Build** - Build/run a target
+* **:BuildInit** - Initialize/configure a build
+* **:BuildInfo** - Print build informations for the current file
 
 **Note**: If the current file doesn't belong to any known build system, it
 will be build using associated compilers. E.g. C files will be build using

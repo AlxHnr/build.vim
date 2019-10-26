@@ -6,6 +6,7 @@ CONTENTS                                                         *build-contents
   2. Commands....................................................|build-commands|
     2.1 Build a specific target...........................................|Build|
     2.2 Initialize the current project................................|BuildInit|
+    2.3 Print build informations for the current file.................|BuildInfo|
   3. Functions..................................................|build-functions|
     3.1 Build the given target.....................................|build#target|
     3.2 Initialize the current project...............................|build#init|
@@ -39,6 +40,12 @@ associated compilers. See |build#target| for more informations.
 
 Initialize the current build system with the given optional arguments. See
 |build#init|.
+
+-------------------------------------------------------------------------------
+2.3 Print build informations for the current file                     *BuildInfo*
+
+Show build commands and other informations related to building the current
+file.
 
 ===============================================================================
 3. Functions                                                    *build-functions*
