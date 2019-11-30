@@ -209,6 +209,28 @@ function! s:build_lang_target(cmd, extra_args) " {{{
     \ s:prepare_cmd_for_shell(a:cmd) . ' ' . a:extra_args)
 endfunction " }}}
 
+" Check if the specified directory contains any build-system files
+" belonging to the given list of build-systems. Returns the name of the
+" first matching build system on success or {} on failure.
+"
+" Example:
+"   call s:get_first_build_system_in_dir('/path/to/project', ['CMake', 'Maven'])
+" Returns: When the given path contains "CMakeList.txt".
+"   "CMake"
+" Returns: When the given path contains neither "CMakeList.txt" nor "pom.xml".
+"   {}
+function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
+  for l:build_name in a:build_system_names
+    for l:build_file in split(s:get_buildsys_item(l:build_name, 'file'), ',')
+      if filereadable(a:dir . '/' . l:build_file)
+        return l:build_name
+      endif
+    endfor
+  endfor
+
+  return {}
+endfunction " }}}
+
 " Returns a dictionary containing informations about the current build
 " system. If no build system could be found, an empty dictionary will be
 " returned instead.
@@ -246,17 +268,13 @@ function! build#get_current_build_system() " {{{
   " build files.
   while l:current_path !~ '\v^(\/|\.)$'
     let l:current_path = fnamemodify(l:current_path, ':h')
-    for l:build_name in l:known_systems
-      for l:build_file in
-        \ split(s:get_buildsys_item(l:build_name, 'file'), ',')
-        if filereadable(l:current_path . '/' . l:build_file)
-          return {
-            \ 'name': l:build_name,
-            \ 'path': l:current_path,
-            \ }
-        endif
-      endfor
-    endfor
+    let l:build_system_name = s:get_first_build_system_in_dir(l:current_path, l:known_systems)
+    if !empty(l:build_system_name)
+      return {
+        \ 'name': l:build_system_name,
+        \ 'path': l:current_path,
+        \ }
+    endif
   endwhile
 endfunction " }}}
 
