@@ -168,20 +168,22 @@ function! s:get_lang_cmd(language, cmd_name) " {{{
   endif
 endfunction " }}}
 
-" Setups makeprg, changes into the given dir and runs g:build#make_cmd
-" inside it. It restores the previous makeprg and path afterwards.
+" Run the given command in the specified directory.
 function! s:run_in_env(dir, cmd) " {{{
-  let l:make_cmd = 'call build#run_makeprg()'
-  if exists('g:build#make_cmd')
-    let l:make_cmd = g:build#make_cmd
+  if has('nvim')
+    rightbelow new
+    autocmd WinLeave <buffer> wincmd p
+    call termopen(a:cmd, {'cwd': a:dir})
+    startinsert
+  else
+    " Fall back to lmake in legacy Vim.
+    let l:old_makeprg = &l:makeprg
+    let &l:makeprg = a:cmd
+    execute 'lchdir! ' . escape(a:dir, '\ ')
+    lmake!
+    lchdir! -
+    let &l:makeprg = l:old_makeprg
   endif
-
-  let l:old_makeprg = &l:makeprg
-  let &l:makeprg = a:cmd
-  execute 'lchdir! ' . escape(a:dir, '\ ')
-  execute l:make_cmd
-  lchdir! -
-  let &l:makeprg = l:old_makeprg
 endfunction " }}}
 
 " Expands various placeholders in the given string and escapes it to
@@ -368,17 +370,4 @@ function! build#info() " {{{
   endif
 
   echo '-'
-endfunction " }}}
-
-" Runs 'makeprg'.
-function! build#run_makeprg() " {{{
-  if has('nvim')
-    let l:cmd = &l:makeprg
-    rightbelow new
-    autocmd WinLeave <buffer> wincmd p
-    call termopen(l:cmd)
-    startinsert
-  else
-    lmake!
-  endif
 endfunction " }}}

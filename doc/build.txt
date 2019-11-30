@@ -10,12 +10,10 @@ CONTENTS                                                         *build-contents
   3. Functions..................................................|build-functions|
     3.1 Build the given target.....................................|build#target|
     3.2 Initialize the current project...............................|build#init|
-    3.3 Run 'makeprg'.........................................|build#run_makeprg|
-    3.4 Get current build system name and path...|build#get_current_build_system|
+    3.3 Get current build system name and path...|build#get_current_build_system|
   4. Options......................................................|build-options|
     4.1 Define and customize build systems......................|g:build#systems|
     4.2 Define single file build commands.....................|g:build#languages|
-    4.3 Set the vim command to use for building................|g:build#make_cmd|
   5. License......................................................|build-license|
 
 ===============================================================================
@@ -67,14 +65,7 @@ them directly to the build systems init command. If the current build
 system has no init command, it will stop with a message.
 
 -------------------------------------------------------------------------------
-3.3 Run 'makeprg'                                             *build#run_makeprg*
-
-In Vim this function calls |lmake|!. In Neovim it runs 'makeprg' in a split
-terminal window below the current buffer. It was intended to be used
-through |g:build#make_cmd|.
-
--------------------------------------------------------------------------------
-3.4 Get current build system name and path       *build#get_current_build_system*
+3.3 Get current build system name and path       *build#get_current_build_system*
 
 Returns a |Dictionary| with the name of the current build system and the
 path to the directory containing the build file. This function returns {}
@@ -147,15 +138,6 @@ three different placeholders:
 %NAME% - The filename with its extension.
 %HEAD% - The filename without its extension.
 
--------------------------------------------------------------------------------
-4.3 Set the vim command to use for building                    *g:build#make_cmd*
-
-This Vim command will be run inside the project directory with 'makeprg' set.
-
-Default:
->
-  let g:build#make_cmd = 'call build#run_makeprg()'
-<
 ===============================================================================
 5. License                                                        *build-license*
 >
