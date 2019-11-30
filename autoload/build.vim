@@ -209,6 +209,33 @@ function! s:build_lang_target(cmd, extra_args) " {{{
     \ s:prepare_cmd_for_shell(a:cmd) . ' ' . a:extra_args)
 endfunction " }}}
 
+" Merge the names in s:build_systems with g:build#systems, prioritising the
+" latter. Returns {} if g:build#systems is broken.
+"
+" Example:
+"   call s:get_list_of_known_build_system_names()
+" Result:
+"   ['CMake', 'Cargo', 'Maven']
+function! s:get_list_of_known_build_system_names() " {{{
+  let l:known_systems = keys(s:build_systems)
+  if exists('g:build#systems')
+    " Only add build systems with existing build files and build commands.
+    for l:bs_name in keys(g:build#systems)
+      if has_key(s:build_systems, l:bs_name)
+        continue
+      elseif has_key(g:build#systems[l:bs_name], 'file')
+        \ && has_key(g:build#systems[l:bs_name], 'command')
+        call add(l:known_systems, l:bs_name)
+      else
+        echomsg "build.vim: build system '" . l:bs_name . "' is incomplete"
+        return {}
+      endif
+    endfor
+  endif
+
+  return l:known_systems
+endfunction " }}}
+
 " Check if the specified directory contains any build-system files
 " belonging to the given list of build-systems. Returns the name of the
 " first matching build system on success or {} on failure.
@@ -247,22 +274,7 @@ function! build#get_current_build_system() " {{{
     return {}
   endif
 
-  let l:known_systems = keys(s:build_systems)
-  if exists('g:build#systems')
-    " Only add build systems with existing build files and build commands.
-    for l:bs_name in keys(g:build#systems)
-      if has_key(s:build_systems, l:bs_name)
-        continue
-      elseif has_key(g:build#systems[l:bs_name], 'file')
-        \ && has_key(g:build#systems[l:bs_name], 'command')
-        call add(l:known_systems, l:bs_name)
-      else
-        echomsg "build.vim: the build system '" . l:bs_name
-          \ . "' is incomplete"
-        return {}
-      endif
-    endfor
-  endif
+  let l:known_systems = s:get_list_of_known_build_system_names()
 
   " Search all directories from the current files pwd upwards for known
   " build files.
