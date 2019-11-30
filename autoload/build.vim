@@ -276,6 +276,18 @@ function! build#get_current_build_system() " {{{
 
   let l:known_systems = s:get_list_of_known_build_system_names()
 
+  " Check the current working directory first. This is useful in combination with plugins which
+  " chdir into the projects root directory.
+  if stridx(l:current_path, getcwd()) == 0
+    let l:build_system_name = s:get_first_build_system_in_dir(getcwd(), l:known_systems)
+    if !empty(l:build_system_name)
+      return {
+        \ 'name': l:build_system_name,
+        \ 'path': getcwd(),
+        \ }
+    endif
+  endif
+
   " Search all directories from the current files pwd upwards for known
   " build files.
   while l:current_path !~ '\v^(\/|\.)$'

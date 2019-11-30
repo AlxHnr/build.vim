@@ -39,6 +39,34 @@ optional arguments which will be passed directly to `make`:
 :Build clean
 ```
 
+### CMake with subdirectories
+
+Your project may look like this:
+
+```
+├── CMakeLists.txt
+├── src/
+│   └── main.cpp
+└── util/
+    ├── CMakeLists.txt
+    ├── util.cpp
+    └── misc/
+        ├── CMakeLists.txt
+        └── misc.cpp
+```
+
+Set the current working directory to the directory containing the main `CMakeLists.txt` and proceed
+as in the previous example:
+
+```vim
+:lchdir ~/path/to/project
+:BuildInit -DCMAKE_BUILD_TYPE=Release
+:Build
+```
+
+**Note**: You can use [this plugin](https://github.com/AlxHnr/project-chdir.vim) to set the working
+directory automatically.
+
 ## Autotools
 
 Your project may look like this:
