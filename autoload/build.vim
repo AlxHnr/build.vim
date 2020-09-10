@@ -57,7 +57,7 @@ let s:language_cmds =
   \   'cpp':
   \   {
   \     'clean' : 'rm %HEAD%',
-  \     'build' : 'g++ -std=c++11 -Wall -Wextra %NAME% -o %HEAD%',
+  \     'build' : 'g++ -std=c++17 -Wall -Wextra %NAME% -o %HEAD%',
   \     'run'   : './%HEAD%',
   \   },
   \   'd':
