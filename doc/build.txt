@@ -141,7 +141,7 @@ three different placeholders:
 ===============================================================================
 5. License                                                        *build-license*
 >
-  Copyright (c) 2019 Alexander Heinrich
+  Copyright (c) 2020 Alexander Heinrich
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
