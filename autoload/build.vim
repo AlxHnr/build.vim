@@ -147,6 +147,30 @@ function! s:get_buildsys_item(bs_name, key) " {{{
   endif
 endfunction " }}}
 
+" Return a dictionary containing all fallback targets for the specified language. Will return an
+" empty dictionary if no fallback targets exist. Both s:language_cmds and g:build#languages are
+" considered, while the latter has a higher priority.
+"
+" Example:
+"   s:gather_fallback_targets('c')
+" Returns:
+"   {
+"     'clean' : 'rm %HEAD%',
+"     'build' : 'gcc -std=c11 -Wall -Wextra %NAME% -o %HEAD%',
+"     'run'   : './%HEAD%',
+"   }
+function! s:gather_fallback_targets(language) " {{{
+  let l:commands = {}
+  if has_key(s:language_cmds, a:language)
+    let l:commands = copy(s:language_cmds[a:language])
+  endif
+  if exists('g:build#languages') && has_key(g:build#languages, a:language)
+    call extend(l:commands, g:build#languages[a:language])
+  endif
+
+  return l:commands
+endfunction " }}}
+
 " Return the specified command for the given language. Will return 0 if the
 " requested item doesn't exist. It will first look into g:build#languages
 " and then fallback to s:language_cmds.
@@ -156,16 +180,11 @@ endfunction " }}}
 " Returns:
 "   './%HEAD%'
 function! s:get_lang_cmd(language, cmd_name) " {{{
-  if exists('g:build#languages')
-    \ && has_key(g:build#languages, a:language)
-    \ && has_key(g:build#languages[a:language], a:cmd_name)
-    return g:build#languages[a:language][a:cmd_name]
-  elseif has_key(s:language_cmds, a:language)
-  \ && has_key(s:language_cmds[a:language], a:cmd_name)
-    return s:language_cmds[a:language][a:cmd_name]
-  else
+  let l:commands = s:gather_fallback_targets(a:language)
+  if empty(l:commands) || !has_key(l:commands, a:cmd_name)
     return 0
   endif
+  return l:commands[a:cmd_name]
 endfunction " }}}
 
 " Run the given command in the specified directory.
