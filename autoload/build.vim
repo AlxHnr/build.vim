@@ -327,9 +327,22 @@ function! s:to_shellescaped_string(list) " {{{
   return join(map(copy(a:list), {index, value -> shellescape(value)}))
 endfunction " }}}
 
-" Tries to initialize the current build system. Takes an arbitrary amount
-" of arguments, which will be passed to the initialisation command.
+" Try to initialize the init system to which the current file belongs. Takes one optional string
+" containing arguments to be passed to the build systems init command.
+"
+" Examples:
+"   call build#init()
+"   call build#init('--enable-gtk --cflags="-O2 -Wall"')
+"
+" If the current file belongs to an autotools project, it will run the following commands:
+"   ./configure
+"   ./configure --enable-gtk --cflags="-O2 -Wall"
 function! build#init(...) " {{{
+  if a:0 > 1
+    echoerr 'build#init(): too many arguments. Takes 0 or 1 argument.'
+    return
+  endif
+
   let l:build_system = build#get_current_build_system()
 
   if empty(l:build_system)
@@ -338,12 +351,12 @@ function! build#init(...) " {{{
   endif
 
   let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
-  if !empty(l:init_cmd)
-    call s:run_in_env(l:build_system.path, l:init_cmd
-      \ . ' ' . s:to_shellescaped_string(a:000))
-  else
+  if empty(l:init_cmd)
     echo "'" . l:build_system.name . "' doesn't need to be initialized"
+    return
   endif
+
+  call s:run_in_env(l:build_system.path, l:init_cmd . (a:0? ' ' . a:1 : ''))
 endfunction " }}}
 
 " Build the current project or file. All optional arguments will be passed

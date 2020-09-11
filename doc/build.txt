@@ -37,9 +37,20 @@ associated compilers. See |build#target| for more informations.
 -------------------------------------------------------------------------------
 2.2 Initialize the current project                                    *BuildInit*
 
-Initialize the current build system with the given optional arguments. See
-|build#init|.
+Try to initialize the init system to which the current file belongs. Takes
+optional arguments which will be passed to the build systems init command.
 
+Examples:
+>
+  :BuildInit
+  :BuildInit --enable-gtk --cflags="-O2 -Wall"
+<
+If the current file belongs to an autotools project, it will run the following
+commands:
+>
+  ./configure
+  ./configure --enable-gtk --cflags="-O2 -Wall"
+<
 -------------------------------------------------------------------------------
 2.3 Print build informations for the current file                     *BuildInfo*
 
@@ -60,10 +71,21 @@ specific commands to build it. See |build#languages|.
 -------------------------------------------------------------------------------
 3.2 Initialize the current project                                   *build#init*
 
-The function |build#init| takes an arbitrary amount of arguments and will pass
-them directly to the build systems init command. If the current build
-system has no init command, it will stop with a message.
+Try to initialize the init system to which the current file belongs. Takes one
+optional string containing arguments to be passed to the build systems init
+command.
 
+Examples:
+>
+  call build#init()
+  call build#init('--enable-gtk --cflags="-O2 -Wall"')
+<
+If the current file belongs to an autotools project, it will run the following
+commands:
+>
+  ./configure
+  ./configure --enable-gtk --cflags="-O2 -Wall"
+<
 -------------------------------------------------------------------------------
 3.3 Get current build system name and path       *build#get_current_build_system*
 
