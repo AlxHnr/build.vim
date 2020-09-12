@@ -8,9 +8,7 @@ CONTENTS                                                         *build-contents
     2.2 Initialize the current project................................|BuildInit|
     2.3 Print build informations for the current file.................|BuildInfo|
   3. Functions..................................................|build-functions|
-    3.1 Build the given target...................................|build#target()|
-    3.2 Initialize the current project.............................|build#init()|
-    3.3 Get current build system...............|build#get_current_build_system()|
+    3.1 Get current build system...............|build#get_current_build_system()|
   4. Options......................................................|build-options|
     4.1 Define and customize build systems......................|g:build#systems|
     4.2 Define single file build commands.....................|g:build#languages|
@@ -61,33 +59,7 @@ file.
 3. Functions                                                    *build-functions*
 
 -------------------------------------------------------------------------------
-3.1 Build the given target                                       *build#target()*
-
-The function |build#target| takes an arbitrary amount of arguments. They
-will be passed directly to the underlying build command. If the current
-file doesn't belong to any known build systems, it will use language
-specific commands to build it. See |build#languages|.
-
--------------------------------------------------------------------------------
-3.2 Initialize the current project                                 *build#init()*
-
-Try to initialize the init system to which the current file belongs. Takes one
-optional string containing arguments to be passed to the build systems init
-command.
-
-Examples:
->
-  1) call build#init()
-  2) call build#init('--enable-gtk --cflags="-O2 -Wall"')
-<
-If the current file belongs to an autotools project, it will run the following
-commands:
->
-  1) ./configure
-  2) ./configure --enable-gtk --cflags="-O2 -Wall"
-<
--------------------------------------------------------------------------------
-3.3 Get current build system                   *build#get_current_build_system()*
+3.1 Get current build system                   *build#get_current_build_system()*
 
 Returns a |Dictionary| with the name of the current build system and the
 path to the directory containing the build file. This function returns {}
