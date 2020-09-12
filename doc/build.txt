@@ -147,7 +147,7 @@ create a dictionary named |g:build#languages|. Here is an example:
     \ {
     \   'python':
     \   {
-    \     'test' : 'python-tester %NAME%',
+    \     'test' : 'python-tester ./%NAME%',
     \   }
     \ }
 <

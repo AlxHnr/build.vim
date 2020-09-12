@@ -50,67 +50,67 @@ let s:language_cmds =
   \ {
   \   'c':
   \   {
-  \     'clean' : 'rm %HEAD%',
-  \     'build' : 'gcc -std=c11 -Wall -Wextra %NAME% -o %HEAD%',
+  \     'clean' : 'rm ./%HEAD%',
+  \     'build' : 'gcc -std=c11 -Wall -Wextra ./%NAME% -o ./%HEAD%',
   \     'run'   : './%HEAD%',
   \   },
   \   'cpp':
   \   {
-  \     'clean' : 'rm %HEAD%',
-  \     'build' : 'g++ -std=c++17 -Wall -Wextra %NAME% -o %HEAD%',
+  \     'clean' : 'rm ./%HEAD%',
+  \     'build' : 'g++ -std=c++17 -Wall -Wextra ./%NAME% -o ./%HEAD%',
   \     'run'   : './%HEAD%',
   \   },
   \   'd':
   \   {
-  \     'clean' : 'rm %HEAD% %HEAD%.o',
-  \     'build' : 'dmd %NAME%',
+  \     'clean' : 'rm ./%HEAD% ./%HEAD%.o',
+  \     'build' : 'dmd ./%NAME%',
   \     'run'   : './%HEAD%',
   \   },
   \   'haskell':
   \   {
-  \     'clean' : 'rm %HEAD%{,.hi,.o}',
-  \     'build' : 'ghc %NAME%',
+  \     'clean' : 'rm ./%HEAD%{,.hi,.o}',
+  \     'build' : 'ghc ./%NAME%',
   \     'run'   : './%HEAD%',
   \   },
   \   'java':
   \   {
-  \     'clean'  : 'rm %HEAD%.class',
-  \     'build'  : 'javac -Xlint %NAME%',
-  \     'run'    : 'java %HEAD%',
+  \     'clean'  : 'rm ./%HEAD%.class',
+  \     'build'  : 'javac -Xlint ./%NAME%',
+  \     'run'    : 'java ./%HEAD%',
   \   },
   \   'nim':
   \   {
-  \     'clean' : 'rm -rf nimcache %HEAD%',
-  \     'build' : 'nim compile %NAME%',
+  \     'clean' : 'rm -rf nimcache ./%HEAD%',
+  \     'build' : 'nim compile ./%NAME%',
   \     'run'   : './%HEAD%',
   \   },
   \   'ocaml':
   \   {
-  \     'run' : 'ocaml %NAME%',
+  \     'run' : 'ocaml ./%NAME%',
   \   },
   \   'racket':
   \   {
-  \     'run'   : 'racket %NAME%',
-  \     'build' : 'raco make -v %NAME%',
+  \     'run'   : 'racket ./%NAME%',
+  \     'build' : 'raco make -v ./%NAME%',
   \     'clean' : 'rm compiled/*_rkt.{dep,zo}; rm -rf compiled/drracket; rmdir compiled',
   \   },
   \   'rust':
   \   {
-  \     'clean' : 'rm %HEAD%',
-  \     'build' : 'rustc %NAME%',
+  \     'clean' : 'rm ./%HEAD%',
+  \     'build' : 'rustc ./%NAME%',
   \     'run'   : './%HEAD%',
   \   },
   \   'scala':
   \   {
-  \     'clean'  : 'rm %HEAD%*.class',
-  \     'build'  : 'scalac %NAME%',
-  \     'run'    : 'scala %HEAD%',
+  \     'clean'  : 'rm ./%HEAD%*.class',
+  \     'build'  : 'scalac ./%NAME%',
+  \     'run'    : 'scala ./%HEAD%',
   \   },
   \   'tex':
   \   {
-  \     'clean'  : 'rm %HEAD%.{aux,log,nav,out,pdf,snm,toc}',
-  \     'build'  : 'pdflatex -file-line-error -halt-on-error %NAME%',
-  \     'run'    : 'xdg-open %HEAD%.pdf',
+  \     'clean'  : 'rm ./%HEAD%.{aux,log,nav,out,pdf,snm,toc}',
+  \     'build'  : 'pdflatex -file-line-error -halt-on-error ./%NAME%',
+  \     'run'    : 'xdg-open ./%HEAD%.pdf',
   \   },
   \ }
 
@@ -120,7 +120,7 @@ let s:scripting_languages =
 
 for s:language in split(s:scripting_languages, ',')
   let s:language_cmds[s:language] =
-    \ { 'run' : 'chmod +x %NAME% && ./%NAME%' }
+    \ { 'run' : 'chmod +x ./%NAME% && ./%NAME%' }
 endfor
 
 unlet s:scripting_languages s:language
@@ -155,8 +155,8 @@ endfunction " }}}
 "   s:gather_fallback_targets('c')
 " Returns:
 "   {
-"     'clean' : 'rm %HEAD%',
-"     'build' : 'gcc -std=c11 -Wall -Wextra %NAME% -o %HEAD%',
+"     'clean' : 'rm ./%HEAD%',
+"     'build' : 'gcc -std=c11 -Wall -Wextra ./%NAME% -o ./%HEAD%',
 "     'run'   : './%HEAD%',
 "   }
 function! s:gather_fallback_targets(language) " {{{
