@@ -375,9 +375,9 @@ endfunction " }}}
 " will run the following commands:
 "   1) -- error: no target specified --
 "   2) -- error: target 'all' is not defined for C files --
-"   3) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo'
-"   4) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo' -O2 -DMY_MACRO="Value 123"
-"   5) rm 'foo'
+"   3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+"   4) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+"   5) rm ./'foo'
 function! build#target(...) " {{{
   if a:0 > 1
     echoerr 'build#target(): too many arguments. Takes 0 or 1 argument.'

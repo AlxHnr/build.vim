@@ -54,9 +54,9 @@ build system, it will run the following commands:
 >
   1) -- error: no target specified --
   2) -- error: target 'all' is not defined for C files --
-  3) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo'
-  4) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo' -O2 -DMY_MACRO="Value 123"
-  5) rm 'foo'
+  3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+  4) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+  5) rm ./'foo'
 <
 -------------------------------------------------------------------------------
 2.2 Initialize the current project                                    *BuildInit*
