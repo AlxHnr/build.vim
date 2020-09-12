@@ -331,12 +331,12 @@ endfunction " }}}
 " containing arguments to be passed to the build systems init command.
 "
 " Examples:
-"   call build#init()
-"   call build#init('--enable-gtk --cflags="-O2 -Wall"')
+"   1) call build#init()
+"   2) call build#init('--enable-gtk --cflags="-O2 -Wall"')
 "
 " If the current file belongs to an autotools project, it will run the following commands:
-"   ./configure
-"   ./configure --enable-gtk --cflags="-O2 -Wall"
+"   1) ./configure
+"   2) ./configure --enable-gtk --cflags="-O2 -Wall"
 function! build#init(...) " {{{
   if a:0 > 1
     echoerr 'build#init(): too many arguments. Takes 0 or 1 argument.'

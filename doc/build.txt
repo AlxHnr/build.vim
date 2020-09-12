@@ -42,14 +42,14 @@ optional arguments which will be passed to the build systems init command.
 
 Examples:
 >
-  :BuildInit
-  :BuildInit --enable-gtk --cflags="-O2 -Wall"
+  1) :BuildInit
+  2) :BuildInit --enable-gtk --cflags="-O2 -Wall"
 <
 If the current file belongs to an autotools project, it will run the following
 commands:
 >
-  ./configure
-  ./configure --enable-gtk --cflags="-O2 -Wall"
+  1) ./configure
+  2) ./configure --enable-gtk --cflags="-O2 -Wall"
 <
 -------------------------------------------------------------------------------
 2.3 Print build informations for the current file                     *BuildInfo*
@@ -77,14 +77,14 @@ command.
 
 Examples:
 >
-  call build#init()
-  call build#init('--enable-gtk --cflags="-O2 -Wall"')
+  1) call build#init()
+  2) call build#init('--enable-gtk --cflags="-O2 -Wall"')
 <
 If the current file belongs to an autotools project, it will run the following
 commands:
 >
-  ./configure
-  ./configure --enable-gtk --cflags="-O2 -Wall"
+  1) ./configure
+  2) ./configure --enable-gtk --cflags="-O2 -Wall"
 <
 -------------------------------------------------------------------------------
 3.3 Get current build system name and path       *build#get_current_build_system*
