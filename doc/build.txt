@@ -154,9 +154,9 @@ create a dictionary named |g:build#languages|. Here is an example:
 Every command will be executed in the directory of the file and can contain
 three different placeholders:
 
-%PATH% - The full path to the directory containing the file.
-%NAME% - The filename with its extension.
-%HEAD% - The filename without its extension.
+%PATH% - Shell-escaped absolute path to the directory containing the file.
+%NAME% - Shell-escaped filename with its extension.
+%HEAD% - Shell-escaped filename without its extension.
 
 ===============================================================================
 5. License                                                        *build-license*
