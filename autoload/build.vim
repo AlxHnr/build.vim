@@ -321,12 +321,6 @@ function! build#get_current_build_system() " {{{
   endwhile
 endfunction " }}}
 
-" Convert the given string list to a single string to be appended to shell
-" commands.
-function! s:to_shellescaped_string(list) " {{{
-  return join(map(copy(a:list), {index, value -> shellescape(value)}))
-endfunction " }}}
-
 " Try to initialize the init system to which the current file belongs. Takes one optional string
 " containing arguments to be passed to the build systems init command.
 "
@@ -359,39 +353,65 @@ function! build#init(...) " {{{
   call s:run_in_env(l:build_system.path, l:init_cmd . (a:0? ' ' . a:1 : ''))
 endfunction " }}}
 
-" Build the current project or file. All optional arguments will be passed
-" directly to the build command.
+" Try to build the given optional target with the specified optional arguments. The target and its
+" arguments must be supplied as a single string. The first part of this string specifies the target:
+" '[TARGET [args...]]', e.g. 'clean' or 'clean --all'.
+"
+" Examples:
+"   1) call build#target()
+"   2) call build#target('all CFLAGS="-O2 -Werror"')
+"   3) call build#target('build')
+"   4) call build#target('build -O2 -DMY_MACRO="Value 123"')
+"   5) call build#target('clean')
+"
+" If the current file belongs to an autotools project, it will run the following commands:
+"   1) make --jobs=8
+"   2) make --jobs=8 all CFLAGS="-O2 -Werror"
+"   3) make --jobs=8 build
+"   4) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+"   5) make --jobs=8 clean
+"
+" If the current file is a standalone C file which does not belong to any known build system, it
+" will run the following commands:
+"   1) -- error: no target specified --
+"   2) -- error: target 'all' is not defined for C files --
+"   3) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo'
+"   4) gcc -std=c11 -Wall -Wextra 'foo.c' -o 'foo' -O2 -DMY_MACRO="Value 123"
+"   5) rm 'foo'
 function! build#target(...) " {{{
-  " Handle optional arguments.
-  if a:0
-    let l:target = a:1
-    let l:escaped_target = shellescape(l:target)
-    let l:extra_args = s:to_shellescaped_string(a:000[1:])
-  else
-    let l:target = ''
-    let l:escaped_target = ''
-    let l:extra_args = ''
+  if a:0 > 1
+    echoerr 'build#target(): too many arguments. Takes 0 or 1 argument.'
+    return
   endif
 
   let l:build_system = build#get_current_build_system()
-
   if !empty(l:build_system)
-    call s:run_in_env(l:build_system.path,
-      \ s:get_buildsys_item(l:build_system.name, 'command')
-      \ . ' ' . l:escaped_target . ' ' . l:extra_args)
-  elseif !strlen(expand('%:t'))
-    echo 'build.vim: the current file has no name'
-  elseif strlen(l:target) == 0
-    echo 'No build target specified'
-  else
-    let l:lang_cmd = s:get_lang_cmd(&filetype, l:target)
-
-    if !empty(lang_cmd)
-      call s:build_lang_target(l:lang_cmd, l:extra_args)
-    else
-      echo 'Unable to run "' . l:target . '" on "' . expand('%:t') . '"'
-    endif
+    let l:command = s:get_buildsys_item(l:build_system.name, 'command')
+    call s:run_in_env(l:build_system.path, l:command . (a:0? ' ' . a:1 : ''))
+    return
   endif
+
+  if a:0 == 0
+    echo 'No build target specified'
+    return
+  endif
+
+  if !strlen(expand('%:t'))
+    echo 'build.vim: the current file has no name'
+    return
+  endif
+
+  let l:split_args = matchlist(a:1, '\v^\s*(\S*)\s*(.*)$')
+  let l:target = l:split_args[1]
+  let l:extra_args = l:split_args[2]
+
+  let l:lang_cmd = s:get_lang_cmd(&filetype, l:target)
+  if empty(l:lang_cmd)
+    echo 'Unable to run "' . l:target . '" on "' . expand('%:t') . '"'
+    return
+  endif
+
+  call s:build_lang_target(l:lang_cmd, l:extra_args)
 endfunction " }}}
 
 " Print build informations about the current file.
