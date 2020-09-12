@@ -359,24 +359,24 @@ endfunction " }}}
 "
 " Examples:
 "   1) call build#target()
-"   2) call build#target('all CFLAGS="-O2 -Werror"')
-"   3) call build#target('build')
-"   4) call build#target('build -O2 -DMY_MACRO="Value 123"')
+"   2) call build#target('build')
+"   3) call build#target('build -O2 -DMY_MACRO="Value 123"')
+"   4) call build#target('all CFLAGS="-O2 -Werror"')
 "   5) call build#target('clean')
 "
 " If the current file belongs to an autotools project, it will run the following commands:
 "   1) make --jobs=8
-"   2) make --jobs=8 all CFLAGS="-O2 -Werror"
-"   3) make --jobs=8 build
-"   4) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+"   2) make --jobs=8 build
+"   3) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+"   4) make --jobs=8 all CFLAGS="-O2 -Werror"
 "   5) make --jobs=8 clean
 "
 " If the current file is a standalone C file which does not belong to any known build system, it
 " will run the following commands:
-"   1) -- error: no target specified --
-"   2) -- error: target 'all' is not defined for C files --
-"   3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
-"   4) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+"   1) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+"   2) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+"   3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+"   4) -- ERROR: target 'all' is not defined for C files --
 "   5) rm ./'foo'
 function! build#target(...) " {{{
   if a:0 > 1
@@ -391,19 +391,19 @@ function! build#target(...) " {{{
     return
   endif
 
-  if a:0 == 0
-    echo 'No build target specified'
-    return
-  endif
-
   if !strlen(expand('%:t'))
     echo 'build.vim: the current file has no name'
     return
   endif
 
-  let l:split_args = matchlist(a:1, '\v^\s*(\S*)\s*(.*)$')
-  let l:target = l:split_args[1]
-  let l:extra_args = l:split_args[2]
+  if a:0 == 0
+    let l:target = 'build'
+    let l:extra_args = ''
+  else
+    let l:split_args = matchlist(a:1, '\v^\s*(\S*)\s*(.*)$')
+    let l:target = l:split_args[1]
+    let l:extra_args = l:split_args[2]
+  endif
 
   let l:lang_cmd = s:get_lang_cmd(&filetype, l:target)
   if empty(l:lang_cmd)

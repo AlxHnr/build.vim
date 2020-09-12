@@ -35,27 +35,27 @@ associated compilers.
 Examples:
 >
   1) :Build
-  2) :Build all CFLAGS="-O2 -Werror"
-  3) :Build build
-  4) :Build build -O2 -DMY_MACRO="Value 123"
+  2) :Build build
+  3) :Build build -O2 -DMY_MACRO="Value 123"
+  4) :Build all CFLAGS="-O2 -Werror"
   5) :Build clean
 <
 If the current file belongs to an autotools project, it will run the following
 commands:
 >
   1) make --jobs=8
-  2) make --jobs=8 all CFLAGS="-O2 -Werror"
-  3) make --jobs=8 build
-  4) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+  2) make --jobs=8 build
+  3) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+  4) make --jobs=8 all CFLAGS="-O2 -Werror"
   5) make --jobs=8 clean
 <
 If the current file is a standalone C file which does not belong to any known
 build system, it will run the following commands:
 >
-  1) -- error: no target specified --
-  2) -- error: target 'all' is not defined for C files --
-  3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
-  4) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+  1) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+  2) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
+  3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
+  4) -- ERROR: target 'all' is not defined for C files --
   5) rm ./'foo'
 <
 -------------------------------------------------------------------------------

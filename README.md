@@ -116,6 +116,8 @@ Pass custom arguments to the compiler:
 :Build build -Wall -Wextra -Werror -pedantic
 ```
 
+**Note**: If `:Build` is called without arguments it will be equivalent to `:Build build`.
+
 ## Python, Bash and other scripting languages
 
 For some files which don't belong to a build system, the `run` target will
