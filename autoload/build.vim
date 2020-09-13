@@ -126,6 +126,16 @@ endfor
 unlet s:scripting_languages s:language
 " }}}
 
+" Logs the given message.
+function! s:log(message) " {{{
+  echo 'build.vim: ' . a:message . '.'
+endfunction " }}}
+"
+" Logs the given error message.
+function! s:log_err(message) " {{{
+  echoerr 'build.vim: ' . a:message . '.'
+endfunction " }}}
+
 " Return the specified key for the given build system. Will return 0 if the
 " requested item doesn't exist. It will first look into g:build#systems and
 " then fallback to s:build_systems.
@@ -169,22 +179,6 @@ function! s:gather_fallback_targets(language) " {{{
   endif
 
   return l:commands
-endfunction " }}}
-
-" Return the specified command for the given language. Will return 0 if the
-" requested item doesn't exist. It will first look into g:build#languages
-" and then fallback to s:language_cmds.
-"
-" Example:
-"   s:get_lang_cmd('c', 'run')
-" Returns:
-"   './%HEAD%'
-function! s:get_lang_cmd(language, cmd_name) " {{{
-  let l:commands = s:gather_fallback_targets(a:language)
-  if empty(l:commands) || !has_key(l:commands, a:cmd_name)
-    return 0
-  endif
-  return l:commands[a:cmd_name]
 endfunction " }}}
 
 " Run the given command in the specified directory.
@@ -246,7 +240,7 @@ function! s:get_list_of_known_build_system_names() " {{{
         \ && has_key(g:build#systems[l:bs_name], 'command')
         call add(l:known_systems, l:bs_name)
       else
-        echomsg "build.vim: build system '" . l:bs_name . "' is incomplete"
+        call s:log_err('build system "' . l:bs_name . '" is incomplete')
         return {}
       endif
     endfor
@@ -333,24 +327,29 @@ endfunction " }}}
 "   2) ./configure --enable-gtk --cflags="-O2 -Wall"
 function! build#init(...) " {{{
   if a:0 > 1
-    echoerr 'build#init(): too many arguments. Takes 0 or 1 argument.'
-    return
+    return s:log_err('build#init(): too many arguments. Takes 0 or 1 argument')
   endif
 
   let l:build_system = build#get_current_build_system()
 
   if empty(l:build_system)
-    echo "The current file doesn't belong to a known build system"
-    return
+    return s:log('Current file does not belong to any known build system')
   endif
 
   let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
   if empty(l:init_cmd)
-    echo "'" . l:build_system.name . "' doesn't need to be initialized"
-    return
+    return s:log('Build system "' . l:build_system.name . '" does not need to be initialized')
   endif
 
   call s:run_in_env(l:build_system.path, l:init_cmd . (a:0? ' ' . a:1 : ''))
+endfunction " }}}
+
+" Print usage examples for the given fallback targets.
+function! s:print_fallback_examples(fallback_targets) " {{{
+  for [target, command] in items(a:fallback_targets)
+    echo '  :Build ' . target . ' [args...]'
+    echo '      => ' . s:prepare_cmd_for_shell(command) . ' [args...]'
+  endfor
 endfunction " }}}
 
 " Try to build the given optional target with the specified optional arguments. The target and its
@@ -380,8 +379,7 @@ endfunction " }}}
 "   5) rm ./'foo'
 function! build#target(...) " {{{
   if a:0 > 1
-    echoerr 'build#target(): too many arguments. Takes 0 or 1 argument.'
-    return
+    return s:log_err('build#target(): too many arguments. Takes 0 or 1 argument')
   endif
 
   let l:build_system = build#get_current_build_system()
@@ -392,8 +390,7 @@ function! build#target(...) " {{{
   endif
 
   if !strlen(expand('%:t'))
-    echo 'build.vim: the current file has no name'
-    return
+    return s:log('Current file has no name')
   endif
 
   if a:0 == 0
@@ -405,13 +402,24 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
-  let l:lang_cmd = s:get_lang_cmd(&filetype, l:target)
-  if empty(l:lang_cmd)
-    echo 'Unable to run "' . l:target . '" on "' . expand('%:t') . '"'
+  let l:commands = s:gather_fallback_targets(&filetype)
+  if empty(l:commands)
+    call s:log('Current file does not belong to any known build system')
+    call s:log('No fallback commands defined for filetype "' . &filetype . '"')
     return
   endif
 
-  call s:build_lang_target(l:lang_cmd, l:extra_args)
+  if !has_key(l:commands, l:target)
+    call s:log('Current file does not belong to any known build system')
+    call s:log('Fallback target "' . l:target . '" is not defined for the filetype "'
+      \ . &filetype . '"')
+    echo "\n"
+    echo 'Commands available for this file:'
+    call s:print_fallback_examples(l:commands)
+    return
+  endif
+
+  call s:build_lang_target(l:commands[l:target], l:extra_args)
 endfunction " }}}
 
 " Print build informations about the current file.
@@ -435,33 +443,19 @@ function! build#info() " {{{
     return
   endif
 
-  echo 'The current file does not belong to any known build systems.'
+  echo 'The current file does not belong to any known build system.'
 
-  let l:global_cmds = {}
-  if exists('g:build#languages') && has_key(g:build#languages, &filetype)
-    let l:global_cmds = g:build#languages[&filetype]
-  endif
-
-  if empty(l:global_cmds) && !has_key(s:language_cmds, &filetype)
+  let l:commands = s:gather_fallback_targets(&filetype)
+  if empty(l:commands)
+    echo 'No fallback commands defined for filetype "' . &filetype . '".'
     return
   endif
 
-  echo 'Here is a list of build targets and their associated commands'
-  echo 'for the current file:'
-  echo '-'
-
-  for l:target in keys(l:global_cmds)
-    echo l:target . ': ' . s:prepare_cmd_for_shell(l:global_cmds[l:target])
-  endfor
-
-  if has_key(s:language_cmds, &filetype)
-    for l:target in keys(s:language_cmds[&filetype])
-      if !has_key(l:global_cmds, l:target)
-        echo l:target . ': '
-          \ . s:prepare_cmd_for_shell(s:language_cmds[&filetype][l:target])
-      endif
-    endfor
-  endif
-
-  echo '-'
+  echo 'Fallback commands are provided. See the examples below.'
+  echo "\n"
+  echo 'Usage:'
+  echo '  :Build [TARGET [args...]]'
+  echo "\n"
+  echo 'Examples:'
+  call s:print_fallback_examples(l:commands)
 endfunction " }}}
