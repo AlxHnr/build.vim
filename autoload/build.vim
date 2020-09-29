@@ -86,7 +86,9 @@ let s:language_cmds =
   \   },
   \   'ocaml':
   \   {
-  \     'run' : 'ocaml ./%NAME%',
+  \     'build' : 'dune build',
+  \     'clean' : 'dune clean',
+  \     'run'   : 'dune exec ./%HEAD%.exe',
   \   },
   \   'racket':
   \   {
