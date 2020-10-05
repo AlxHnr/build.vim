@@ -10,12 +10,12 @@ let s:build_systems =
   \   'Autotools':
   \   {
   \     'file'     : 'configure',
-  \     'init'     : './configure',
   \     'commands' :
   \     {
   \        'do'    : 'make --jobs=' . s:jobs,
   \        'build' : 'make --jobs=' . s:jobs,
   \        'clean' : 'make --jobs=' . s:jobs . ' clean',
+  \        'init'  : './configure',
   \        'run'   : './%RELPATH%/%HEAD%',
   \     }
   \   },
@@ -33,15 +33,15 @@ let s:build_systems =
   \   'CMake':
   \   {
   \     'file'     : 'CMakeLists.txt',
-  \     'init'     : 'ln -sf build/compile_commands.json'
-  \                . ' && mkdir -p build/'
-  \                . ' && cd build/'
-  \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \     'commands' :
   \     {
   \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
   \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
   \        'clean' : 'rm -r build',
+  \        'init'  : 'ln -sf build/compile_commands.json'
+  \                . ' && mkdir -p build/'
+  \                . ' && cd build/'
+  \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \        'run'   : './build/%HEAD%',
   \     },
   \   },
@@ -433,20 +433,11 @@ endfunction " }}}
 function! build#init(...) " {{{
   if a:0 > 1
     return s:log_err('build#init(): too many arguments. Takes 0 or 1 argument')
+  elseif a:0 ==# 1
+    return build#target('init ' . a:1)
+  else
+    return build#target('init')
   endif
-
-  let l:build_system = build#get_current_build_system()
-
-  if l:build_system.fallback
-    return s:log('Current file does not belong to any known build system')
-  endif
-
-  let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
-  if empty(l:init_cmd)
-    return s:log('Build system "' . l:build_system.name . '" does not need to be initialized')
-  endif
-
-  call s:run_in_env(l:build_system.path, l:init_cmd . (a:0? ' ' . a:1 : ''))
 endfunction " }}}
 
 " Print usage examples for the given commands.
@@ -529,9 +520,7 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
-  if l:subcmd ==# 'init'
-    return build#init(l:extra_args)
-  elseif l:subcmd ==# 'help'
+  if l:subcmd ==# 'help'
     return s:help_message(l:build_system)
   elseif l:subcmd ==# 'info'
     return s:info_message(l:build_system)
