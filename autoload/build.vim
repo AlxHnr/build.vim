@@ -185,7 +185,7 @@ function! s:log_err(message) " {{{
 endfunction " }}}
 
 " Return the path dest relative to the path start
-" if dest or start are relative path, they are taken 
+" if dest or start are relative path, they are taken
 " relative to the current working directory
 " Example:
 "   " current working directory is /a/b/c
@@ -209,8 +209,8 @@ function! s:relative_to(dest, start) " {{{
 endfunction " }}}
 
 " Return the specified key for the given build system. Will return 0 if the
-" requested item doesn't exist. It will first look into g:build#systems and
-" then fallback to s:build_systems.
+" requested item doesn't exist. It will first look into g:build#systems and then
+" fallback to s:build_systems.
 "
 " Example:
 "   s:get_buildsys_item('CMake', 'file')
@@ -229,12 +229,15 @@ function! s:get_buildsys_item(bs_name, key) " {{{
   endif
 endfunction " }}}
 
-" Return a dictionary containing all fallback targets for the specified language. Will return an
-" empty dictionary if no fallback targets exist. Both s:language_cmds and g:build#languages are
-" considered, while the latter has a higher priority.
+" Return a dictionary containing all available commands for the specified
+" build system. Will return an empty dictionary if nothing is found.
+" If the build_system is not a fallback, both g:build#systems and
+" s:build#systems are considered, the former overwriting the latter.
+" It the build_system is a fallback, both g:build#languages and s:language_cmds
+" are considered.
 "
 " Example:
-"   s:gather_fallback_targets('c')
+"   s:gather_commands({'name': 'c', 'fallback': v:true))
 " Returns:
 "   {
 "     'clean' : 'rm ./%HEAD%',
@@ -360,6 +363,7 @@ function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
   for l:build_name in a:build_system_names
     for l:build_file in split(s:get_buildsys_item(l:build_name, 'file'), ',')
       if filereadable(a:dir . '/' . l:build_file)
+            \ || !empty(glob(a:dir . '/' . l:build_file))
         return l:build_name
       endif
     endfor
@@ -369,7 +373,7 @@ function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
 endfunction " }}}
 
 " Returns a dictionary containing informations about the current build
-" system. If no build system could be found, a fallback build system 
+" system. If no build system could be found, a fallback build system
 " based on file type is proposed
 "
 " Example: When run in a buffer containing /some/path/CMakeLists.txt
@@ -445,29 +449,29 @@ function! build#init(...) " {{{
   call s:run_in_env(l:build_system.path, l:init_cmd . (a:0? ' ' . a:1 : ''))
 endfunction " }}}
 
-" Print usage examples for the given fallback targets.
+" Print usage examples for the given commands.
 function! s:print_command_examples(commands, build_system) " {{{
-  for [l:target, l:command] in items(a:commands)
-    echo '  :Build ' . l:target . ' [args...]'
+  for [l:subcmd, l:command] in items(a:commands)
+    echo '  :Build ' . l:subcmd . ' [args...]'
     echo '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system) . ' [args...]'
   endfor
 endfunction " }}}
 
-" Try to build the given optional target with the specified optional arguments. The target and its
-" arguments must be supplied as a single string. The first part of this string specifies the target:
-" '[TARGET [args...]]', e.g. 'clean' or 'clean --all'.
+" Run the provided subcommand. If no argument is provided, the default
+" subcommand is build.  Arguments must be supplied as a single string.
+" '[SUBCMD [args...]]', e.g. 'clean' or 'clean --all'.
 "
 " Examples:
 "   1) call build#target()
 "   2) call build#target('build')
 "   3) call build#target('build -O2 -DMY_MACRO="Value 123"')
-"   4) call build#target('all CFLAGS="-O2 -Werror"')
+"   4) call build#target('do all CFLAGS="-O2 -Werror"')
 "   5) call build#target('clean')
 "
 " If the current file belongs to an autotools project, it will run the following commands:
 "   1) make --jobs=8
-"   2) make --jobs=8 build
-"   3) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
+"   2) make --jobs=8
+"   3) make --jobs=8 -O2 -DMY_MACRO="Value 123"
 "   4) make --jobs=8 all CFLAGS="-O2 -Werror"
 "   5) make --jobs=8 clean
 "
@@ -476,7 +480,7 @@ endfunction " }}}
 "   1) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
 "   2) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
 "   3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
-"   4) -- ERROR: target 'all' is not defined for C files --
+"   4) -- ERROR: command 'do' is not defined for C files --
 "   5) rm ./'foo'
 function! build#target(...) " {{{
   if a:0 > 1
