@@ -19,6 +19,7 @@ let s:build_systems =
   \        'clean' : 'make --jobs=' . s:jobs . ' clean',
   \        'init'  : './configure',
   \        'run'   : './%RELPATH%/%HEAD%',
+  \        'test' : 'make --jobs=' . s:jobs . ' test',
   \     }
   \   },
   \   'Cargo':
@@ -30,6 +31,7 @@ let s:build_systems =
   \        'build' : 'cargo build',
   \        'clean' : 'cargo clean',
   \        'run'   : 'cargo run',
+  \        'test'  : 'cargo test',
   \     },
   \   },
   \   'CMake':
@@ -45,6 +47,7 @@ let s:build_systems =
   \                . ' && cd build/'
   \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
   \        'run'   : './build/%HEAD%',
+  \        'test' : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
   \     },
   \   },
   \   'DUB':
@@ -56,6 +59,7 @@ let s:build_systems =
   \        'build' : 'dub build',
   \        'clean' : 'dub clean',
   \        'run'   : 'dub run',
+  \        'test'  : 'dub test',
   \     },
   \   },
   \   'Dune':
@@ -67,6 +71,7 @@ let s:build_systems =
   \       'build'  : 'dune build',
   \       'clean'  : 'dune clean',
   \       'run'    : 'dune exec ./%RELPATH%/%HEAD%.exe',
+  \       'test'   : 'dune runtest',
   \     },
   \   },
   \   'Make':
@@ -78,6 +83,7 @@ let s:build_systems =
   \        'build' : 'make --jobs=' . s:jobs,
   \        'clean' : 'make --jobs=' . s:jobs . ' clean',
   \        'run'   : './%RELPATH%/%HEAD%',
+  \        'test'  : 'make --jobs=' . s:jobs . ' test',
   \     }
   \   },
   \   'Maven':
@@ -88,6 +94,7 @@ let s:build_systems =
   \        'do'    : 'mvn',
   \        'build' : 'mvn build',
   \        'clean' : 'mvn clean',
+  \        'test'  : 'mvn test',
   \     }
   \   },
   \ }

@@ -34,9 +34,9 @@ The `:Build` command runs `make` inside the build directory. It takes
 optional arguments which will be passed directly to `make`:
 
 ```vim
-:Build " equivalent to :Build build
-:Build build all " build the make target all
-:Build build test " build the make target test
+:Build " equivalent to :Build build, build the default target
+:Build build all " build the all target
+:Build test " run the tests
 :Build clean " clean the directory
 :Build run " run the current file or the whole project depending on the build system
 ```

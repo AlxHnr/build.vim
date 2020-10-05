@@ -58,6 +58,7 @@ Common subcommands are:
 - `build` tries to build the project                                  *Build_build*
 - `run` run the current file if it make sense in the current build      *Build_run*
   system, otherwise run the whole project.
+- `test` tries to run the tests                                         *Build_run*
 - `clean` cleans build artifacts                                      *Build_clean*
 - `do` is an escape hatch to access the underlying build system.         *Build_do*
   Arguments passed to `do` are passed as-is to the underlying build system
@@ -71,7 +72,7 @@ Examples:
     1) :Build
     2) :Build build --release
     3) :Build clean
-    4) :Build do runtest
+    4) :Build test
 <
 
 If the detected build system was `Make`, those commands would result in:
@@ -79,7 +80,7 @@ If the detected build system was `Make`, those commands would result in:
     1) make --jobs=4
     2) make --jobs=4 --release
     3) make --jobs=4 clean
-    4) make --jobs=4 runtest
+    4) make --jobs=4 test
 <
 
 If the detected build system was `Dune`, those would result in:
@@ -171,15 +172,17 @@ New build systems can be added to |g:build#systems|:
   \   },
   \ }
 <
+
 Every build system must have a name, a file entry and a commands entry.  The
 file entry contains a comma-separated list of filenames or globs (see vim help
 for |glob()|), describing the build files to search for. The commands entry
 contains the commands for running the build system. It will be run in the
 directory containing the build file.
 You never have to add `info` or `help` that are handled internally.
-You should provide `init` if it makes sens for your build system.
+You should provide `init` if it makes sense for your build system.
 You can add new commands if you want, they will be recognized on a per-build
 system basis.
+You can omit some of the common commands if they don't make sense in your case.
 
 Every command will be executed in the directory of the detected build file and can contain
 four different placeholders:
