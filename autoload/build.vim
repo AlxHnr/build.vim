@@ -457,6 +457,33 @@ function! s:print_command_examples(commands, build_system) " {{{
   endfor
 endfunction " }}}
 
+" Print an info message for the given build system
+function! s:info_message(build_system)
+  let l:commands = s:gather_commands(a:build_system)
+
+  if a:build_system.fallback
+    call s:log('Current file does not belong to any known build system')
+    if empty(l:commands)
+      echo 'No fallback commands defined for filetype "' . &filetype . '".'
+      return
+    endif
+    echo 'Fallback commands are provided. See the examples below.'
+  else
+    echo 'Build system:      ' . a:build_system.name
+    echo 'Project directory: ' . a:build_system.path
+  endif
+endfunction
+
+" Print a help message for the given build system
+function! s:help_message(build_system)
+  let l:commands = s:gather_commands(a:build_system)
+  echo 'Usage:'
+  echo '  :Build [SUBCMD [args...]]'
+  echo "\n"
+  echo 'Examples:'
+  call s:print_command_examples(l:commands, a:build_system)
+endfunction
+
 " Run the provided subcommand. If no argument is provided, the default
 " subcommand is build.  Arguments must be supplied as a single string.
 " '[SUBCMD [args...]]', e.g. 'clean' or 'clean --all'.
@@ -502,6 +529,14 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
+  if l:subcmd ==# 'init'
+    return build#init(l:extra_args)
+  elseif l:subcmd ==# 'help'
+    return s:help_message(l:build_system)
+  elseif l:subcmd ==# 'info'
+    return s:info_message(l:build_system)
+  endif
+
   let l:commands = s:gather_commands(l:build_system)
   if empty(l:commands)
     if l:build_system.fallback
@@ -523,8 +558,7 @@ function! build#target(...) " {{{
         \ . l:build_system.name . '"')
     endif
     echo "\n"
-    echo 'Commands available for this file:'
-    call s:print_command_examples(l:commands, l:build_system)
+    call s:help_message(l:build_system)
     return
   endif
 
@@ -534,23 +568,7 @@ endfunction " }}}
 " Print build informations about the current file.
 function! build#info() " {{{
   let l:build_system = build#get_current_build_system()
-  let l:commands = s:gather_commands(l:build_system)
-
-  if l:build_system.fallback
-    echo 'No fallback commands defined for filetype "' . &filetype . '".'
-    if empty(l:commands)
-      return
-    endif
-    echo 'Fallback commands are provided. See the examples below.'
-  else
-    echo 'Build system:      ' . l:build_system.name
-    echo 'Project directory: ' . l:build_system.path
-  endif
-
+  call s:info_message(l:build_system)
   echo "\n"
-  echo 'Usage:'
-  echo '  :Build [SUBCMD [args...]]'
-  echo "\n"
-  echo 'Examples:'
-  call s:print_command_examples(l:commands, l:build_system)
+  call s:help_message(l:build_system)
 endfunction " }}}
