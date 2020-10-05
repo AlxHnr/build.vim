@@ -4,7 +4,7 @@ CONTENTS                                                         *build-contents
 
   1. Description..............................................|build-description|
   2. Commands....................................................|build-commands|
-    2.1 Build a specific target...........................................|Build|
+    2.1 Common tasks......................................................|Build|
     2.2 Initialize the current project................................|BuildInit|
     2.3 Print build informations for the current file.................|BuildInfo|
   3. Functions..................................................|build-functions|
@@ -21,47 +21,80 @@ CONTENTS                                                         *build-contents
 belongs to a project with a build system or not. Thus it knows how to build
 and run it. This plugin works by searching from the files directory upwards,
 until it finds a known build file.
+It tries to provide a homogeneous interface for common tasks, independently of
+the underlying build system (or its absence).
 
 ===============================================================================
 2. Commands                                                      *build-commands*
 
--------------------------------------------------------------------------------
-2.1 Build a specific target                                               *Build*
+This plugin propose few commands:
+- `:Build` a general purpose command used to achieve common tasks
+- `:BuildInit` initialize the build system if needed
+- `:BuildInfo` provide informations and help message on the current build
+  system
+- `:BuildRefresh` force a fresh detection of the build system
 
-Try to build the given optional target with the specified optional arguments.
-If the current file does not belong to a build system, it will be build using
-associated compilers.
+-------------------------------------------------------------------------------
+2.1 Common tasks                                                          *Build*
+
+The `:Build` command takes either no arguments or a first argument called a
+subcommand and any number of other arguments as you would pass them to a shell
+command.
+
+Subcommands should represent the same action across different build systems
+independently from how each works.
+
+For example `:Build clean` on a `Make` based project would expand to
+`make clean` while for a `CMake` based project it would result in
+`rm -r build/`
+
+Common subcommands are:
+- `help` lists available subcommands, providing exemples of resulting  *Build_help*
+  commands
+- `info` echoes the basic informations on the detected build system:   *Build_info*
+  working path and name
+- `init` may not be available. When it is, it initialize the build of  *Build_init*
+  the project.
+- `build` tries to build the project                                  *Build_build*
+- `run` run the current file if it make sense in the current build      *Build_run*
+  system, otherwise run the whole project.
+- `clean` cleans build artifacts                                      *Build_clean*
+- `do` is an escape hatch to access the underlying build system.         *Build_do*
+  Arguments passed to `do` are passed as-is to the underlying build system
+  command
+
+When arguments are passed to a subcommand they are passed as-is to the
+underlying build system allowing for per-project tweakings.
 
 Examples:
 >
-  1) :Build
-  2) :Build build
-  3) :Build build -O2 -DMY_MACRO="Value 123"
-  4) :Build all CFLAGS="-O2 -Werror"
-  5) :Build clean
+    1) :Build
+    2) :Build build --release
+    3) :Build clean
+    4) :Build do runtest
 <
-If the current file belongs to an autotools project, it will run the following
-commands:
+
+If the detected build system was `Make`, those commands would result in:
 >
-  1) make --jobs=8
-  2) make --jobs=8 build
-  3) make --jobs=8 build -O2 -DMY_MACRO="Value 123"
-  4) make --jobs=8 all CFLAGS="-O2 -Werror"
-  5) make --jobs=8 clean
+    1) make --jobs=4
+    2) make --jobs=4 --release
+    3) make --jobs=4 clean
+    4) make --jobs=4 runtest
 <
-If the current file is a standalone C file which does not belong to any known
-build system, it will run the following commands:
+
+If the detected build system was `Dune`, those would result in:
 >
-  1) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
-  2) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo'
-  3) gcc -std=c11 -Wall -Wextra ./'foo.c' -o ./'foo' -O2 -DMY_MACRO="Value 123"
-  4) -- ERROR: target 'all' is not defined for C files --
-  5) rm ./'foo'
+   1) dune build
+   2) dune build --release
+   3) dune clean
+   4) dune runtest
 <
+
 -------------------------------------------------------------------------------
 2.2 Initialize the current project                                    *BuildInit*
 
-Try to initialize the init system to which the current file belongs. Takes
+`:BuildInit` does the same thing as `:Build init`.
+It try to initialize the init system to which the current file belongs. Takes
 optional arguments which will be passed to the build systems init command.
 
 Examples:
@@ -80,6 +113,7 @@ commands:
 
 Show build commands and other informations related to building the current
 file.
+In effect do the same as `:Build info` and `:Build help`.
 
 ===============================================================================
 3. Functions                                                    *build-functions*
@@ -112,7 +146,10 @@ behavior, override the desired entry in |g:build#systems|:
   \ {
   \   'Make':
   \   {
-  \     'command': 'make -j20',
+  \     'commands': {
+  \       'build': 'make -j20',
+  \       'run'  : 'make run_main',
+  \     }
   \   },
   \ }
 <
@@ -122,18 +159,40 @@ New build systems can be added to |g:build#systems|:
   \ {
   \   'my-build-system':
   \   {
-  \     'file'    : 'foo.json,Foo.json,*.foobuild',
-  \     'command' : 'foomake',
-  \     'init'    : './configure',
+  \     'file'     : 'foo.json,Foo.json,*.foobuild',
+  \     'commands' : {
+  \       'do'   : 'foomake',
+  \       'init' : 'mkdir .foomake_cache',
+  \       'build': 'foomake build',
+  \       'clean': 'foomake wipe',
+  \       'run'  : 'foomake cmd',
+  \       'bar'  : 'foomake bar', " an uncommon command
+  \     },
   \   },
   \ }
 <
-Every build system must have a name, a file entry and a command entry.
-The file entry contains a comma-separated list of filenames, describing the
-build files to search for. It can contain wildcards. See |globpath()|. The
-command entry contains the command for running the build system. It will be
-run in the directory containing the build file. The init entry is optional and
-contains the command for initializing the build.
+Every build system must have a name, a file entry and a commands entry. The
+file entry contains a comma-separated list of filenames, describing the build
+files to search for. It can contain wildcards. See |globpath()|. The commands
+entry contains the commands for running the build system. It will be run in
+the directory containing the build file. You never have to add `info` or
+`help` that are handled internally. You should provide `init` if it makes sens
+for your build system. You can add new commands if you want, they will be
+recognized on a per-build system basis.
+
+Every command will be executed in the directory of the detected build file and can contain
+four different placeholders:
+
+                                                                         *%PATH%*
+%PATH% - Shell-escaped absolute path to the directory containing the current
+file.
+                                                                      *%RELPATH%*
+%RELPATH% - Shell-escaped relative path from the directory of the build file
+to the directory of the current file
+                                                                         *%NAME%*
+%NAME% - Shell-escaped filename with its extension.
+                                                                         *%HEAD%*
+%HEAD% - Shell-escaped filename without its extension.
 
 -------------------------------------------------------------------------------
 4.2 Define single file build commands                         *g:build#languages*
@@ -151,12 +210,8 @@ create a dictionary named |g:build#languages|. Here is an example:
     \   }
     \ }
 <
-Every command will be executed in the directory of the file and can contain
-three different placeholders:
-
-%PATH% - Shell-escaped absolute path to the directory containing the file.
-%NAME% - Shell-escaped filename with its extension.
-%HEAD% - Shell-escaped filename without its extension.
+Every command will be executed in the directory of the current file and can
+contain the same placeholders. In this case %RELPATH% always expand to `'.'`.
 
 ===============================================================================
 5. License                                                        *build-license*
