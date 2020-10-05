@@ -9,38 +9,84 @@ let s:build_systems =
   \ {
   \   'Autotools':
   \   {
-  \     'file'    : 'configure',
-  \     'init'    : './configure',
-  \     'command' : 'make --jobs=' . s:jobs,
+  \     'file'     : 'configure',
+  \     'init'     : './configure',
+  \     'commands' :
+  \     {
+  \        'do'    : 'make --jobs=' . s:jobs,
+  \        'build' : 'make --jobs=' . s:jobs,
+  \        'clean' : 'make --jobs=' . s:jobs . ' clean',
+  \        'run'   : './%RELPATH%/%HEAD%',
+  \     }
   \   },
   \   'Cargo':
   \   {
-  \     'file'    : 'Cargo.toml',
-  \     'command' : 'cargo',
+  \     'file'     : 'Cargo.toml',
+  \     'commands' :
+  \     {
+  \        'do'    : 'cargo',
+  \        'build' : 'cargo build',
+  \        'clean' : 'cargo clean',
+  \        'run'   : 'cargo run',
+  \     },
   \   },
   \   'CMake':
   \   {
-  \     'file'    : 'CMakeLists.txt',
-  \     'init'    : 'ln -sf build/compile_commands.json'
-  \               . ' && mkdir -p build/'
-  \               . ' && cd build/'
-  \               . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-  \     'command' : 'cmake --build ./build/ -- -j ' . s:jobs,
+  \     'file'     : 'CMakeLists.txt',
+  \     'init'     : 'ln -sf build/compile_commands.json'
+  \                . ' && mkdir -p build/'
+  \                . ' && cd build/'
+  \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
+  \     'commands' :
+  \     {
+  \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
+  \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
+  \        'clean' : 'rm -r build',
+  \        'run'   : './build/%HEAD%',
+  \     },
   \   },
   \   'DUB':
   \   {
-  \     'file'    : 'dub.json',
-  \     'command' : 'dub',
+  \     'file'     : 'dub.json',
+  \     'commands' :
+  \     {
+  \        'do'    : 'dub',
+  \        'build' : 'dub build',
+  \        'clean' : 'dub clean',
+  \        'run'   : 'dub run',
+  \     },
+  \   },
+  \   'Dune':
+  \   {
+  \     'file'     : 'dune',
+  \     'commands' :
+  \     {
+  \       'do'     : 'dune',
+  \       'build'  : 'dune build',
+  \       'clean'  : 'dune clean',
+  \       'run'    : 'dune exec ./%RELPATH%/%HEAD%.exe',
+  \     },
   \   },
   \   'Make':
   \   {
-  \     'file'    : 'Makefile,makefile',
-  \     'command' : 'make --jobs=' . s:jobs,
+  \     'file'     : 'Makefile,makefile',
+  \     'commands' :
+  \     {
+  \        'do'    : 'make --jobs=' . s:jobs,
+  \        'build' : 'make --jobs=' . s:jobs,
+  \        'clean' : 'make --jobs=' . s:jobs . ' clean',
+  \        'run'   : './%RELPATH%/%HEAD%',
+  \     }
   \   },
   \   'Maven':
   \   {
-  \     'file'    : 'pom.xml',
-  \     'command' : 'mvn',
+  \     'file'     : 'pom.xml',
+  \     'commands' :
+  \     {
+  \        'do'    : 'mvn',
+  \        'build' : 'mvn build',
+  \        'clean' : 'mvn clean',
+  \     }
   \   },
   \ }
 " }}}
@@ -86,7 +132,9 @@ let s:language_cmds =
   \   },
   \   'ocaml':
   \   {
-  \     'run' : 'ocaml ./%NAME%',
+  \     'build' : 'ocamlc ./%NAME%',
+  \     'clean' : 'rm -f ./%HEAD%',
+  \     'run'   : 'ocaml ./%NAME%',
   \   },
   \   'racket':
   \   {
@@ -136,6 +184,30 @@ function! s:log_err(message) " {{{
   echoerr 'build.vim: ' . a:message . '.'
 endfunction " }}}
 
+" Return the path dest relative to the path start
+" if dest or start are relative path, they are taken 
+" relative to the current working directory
+" Example:
+"   " current working directory is /a/b/c
+"   s:relative_to('/a/b/d/e/f/g', '../d/e')
+" Returns:
+"   'f/g'
+function! s:relative_to(dest, start) " {{{
+  " make sure both path are absolute
+  let l:dest = fnamemodify(a:dest, ':p')
+  let l:start = fnamemodify(a:start, ':p')
+
+  let l:initial_wd = getcwd()
+
+  " move to the starting directory
+  exec 'lcd '.l:start
+  " expand the destination into a relative path to cwd
+  let l:dest = fnamemodify(l:dest, ':.')
+  " move back to were we started
+  exec 'lcd '.l:initial_wd
+  return l:dest
+endfunction " }}}
+
 " Return the specified key for the given build system. Will return 0 if the
 " requested item doesn't exist. It will first look into g:build#systems and
 " then fallback to s:build_systems.
@@ -169,13 +241,27 @@ endfunction " }}}
 "     'build' : 'gcc -std=c11 -Wall -Wextra ./%NAME% -o ./%HEAD%',
 "     'run'   : './%HEAD%',
 "   }
-function! s:gather_fallback_targets(language) " {{{
+function! s:gather_commands(build_system) " {{{
   let l:commands = {}
-  if has_key(s:language_cmds, a:language)
-    let l:commands = copy(s:language_cmds[a:language])
-  endif
-  if exists('g:build#languages') && has_key(g:build#languages, a:language)
-    call extend(l:commands, g:build#languages[a:language])
+  let l:name = a:build_system.name
+
+  if a:build_system.fallback
+    if has_key(s:language_cmds, l:name)
+      let l:commands = copy(s:language_cmds[l:name])
+    endif
+    if exists('g:build#languages') && has_key(g:build#languages, l:name)
+      call extend(l:commands, g:build#languages[l:name])
+    endif
+  else
+    if has_key(s:build_systems, l:name)
+      \ && has_key(s:build_systems[l:name], 'commands')
+      let l:commands = copy(s:build_systems[l:name].commands)
+    endif
+    if exists('g:build#systems')
+      \ && has_key(g:build#systems, l:name)
+      \ && has_key(g:build#systems[l:name], 'commands')
+      call extend(l:commands, g:build#systems[l:name].commands)
+    endif
   endif
 
   return l:commands
@@ -203,23 +289,34 @@ endfunction " }}}
 " be appended to shell commands.
 "
 " Example:
-"   s:prepare_cmd_for_shell('This is %NAME%')
+"   s:prepare_cmd_for_shell('This is %NAME%',
+"         \ {'fallback': v:true'})
 " Returns:
 "   "This is 'main.cpp'"
-function! s:prepare_cmd_for_shell(str) " {{{
+function! s:prepare_cmd_for_shell(str, build_system) " {{{
   let l:str = a:str
-  let l:str = substitute(l:str, '%PATH%', escape(shellescape(expand('%:p:h')), '\'), 'g')
-  let l:str = substitute(l:str, '%NAME%', escape(shellescape(expand('%:t')), '\'),   'g')
-  let l:str = substitute(l:str, '%HEAD%', escape(shellescape(expand('%:t:r')), '\'), 'g')
+  let l:str = substitute(l:str, '%PATH%',
+        \ escape(shellescape(expand('%:p:h')), '\'), 'g')
+  let l:str = substitute(l:str, '%NAME%',
+        \ escape(shellescape(expand('%:t')), '\'),   'g')
+  let l:str = substitute(l:str, '%HEAD%',
+        \ escape(shellescape(expand('%:t:r')), '\'), 'g')
+  if a:build_system.fallback
+    let l:str = substitute(l:str, '%RELPATH%', '.', 'g')
+  else
+    let l:str = substitute(l:str, '%RELPATH%',
+          \ escape(shellescape(s:relative_to(expand('%:p:h'), a:build_system.path)), '\'),
+          \ 'g')
+  endif
   return l:str
 endfunction " }}}
 
-" Builds the target for the current file with rules from the given dict.
-" This function expects a valid dict with all entries needed to build the
-" current file. It takes an extra argument string for the build command.
-function! s:build_lang_target(cmd, extra_args) " {{{
-  call s:run_in_env(expand('%:p:h'),
-    \ s:prepare_cmd_for_shell(a:cmd) . ' ' . a:extra_args)
+" Run the command with eventual arguments at the location of the build_system
+function! s:run_command(cmd, extra_args, build_system) " {{{
+  let l:path = a:build_system.fallback? expand('%:p:h') : a:build_system.path
+  let l:command = s:prepare_cmd_for_shell(a:cmd, a:build_system)
+        \ . (empty(a:extra_args)? '' : ' ' . a:extra_args)
+  call s:run_in_env(l:path, l:command)
 endfunction " }}}
 
 " Merge the names in s:build_systems with g:build#systems, prioritising the
@@ -237,7 +334,7 @@ function! s:get_list_of_known_build_system_names() " {{{
       if has_key(s:build_systems, l:bs_name)
         continue
       elseif has_key(g:build#systems[l:bs_name], 'file')
-        \ && has_key(g:build#systems[l:bs_name], 'command')
+            \ && has_key(g:build#systems[l:bs_name], 'commands')
         call add(l:known_systems, l:bs_name)
       else
         call s:log_err('build system "' . l:bs_name . '" is incomplete')
@@ -272,19 +369,20 @@ function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
 endfunction " }}}
 
 " Returns a dictionary containing informations about the current build
-" system. If no build system could be found, an empty dictionary will be
-" returned instead.
+" system. If no build system could be found, a fallback build system 
+" based on file type is proposed
 "
 " Example: When run in a buffer containing /some/path/CMakeLists.txt
 " Result:
 " {
 "   'name': 'CMake',
 "   'path': '/some/path',
+"   'fallback': v:false,
 " }
 function! build#get_current_build_system() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
-    return {}
+    return {'name': &filetype, 'fallback': v:true, 'path': '.'}
   endif
 
   let l:known_systems = s:get_list_of_known_build_system_names()
@@ -297,6 +395,7 @@ function! build#get_current_build_system() " {{{
       return {
         \ 'name': l:build_system_name,
         \ 'path': getcwd(),
+        \ 'fallback': v:false,
         \ }
     endif
   endif
@@ -310,9 +409,11 @@ function! build#get_current_build_system() " {{{
       return {
         \ 'name': l:build_system_name,
         \ 'path': l:current_path,
+        \ 'fallback': v:false,
         \ }
     endif
   endwhile
+  return {'name': &filetype, 'fallback': v:true, 'path': '.'}
 endfunction " }}}
 
 " Try to initialize the init system to which the current file belongs. Takes one optional string
@@ -332,7 +433,7 @@ function! build#init(...) " {{{
 
   let l:build_system = build#get_current_build_system()
 
-  if empty(l:build_system)
+  if l:build_system.fallback
     return s:log('Current file does not belong to any known build system')
   endif
 
@@ -345,10 +446,10 @@ function! build#init(...) " {{{
 endfunction " }}}
 
 " Print usage examples for the given fallback targets.
-function! s:print_fallback_examples(fallback_targets) " {{{
-  for [target, command] in items(a:fallback_targets)
-    echo '  :Build ' . target . ' [args...]'
-    echo '      => ' . s:prepare_cmd_for_shell(command) . ' [args...]'
+function! s:print_command_examples(commands, build_system) " {{{
+  for [l:target, l:command] in items(a:commands)
+    echo '  :Build ' . l:target . ' [args...]'
+    echo '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system) . ' [args...]'
   endfor
 endfunction " }}}
 
@@ -383,79 +484,69 @@ function! build#target(...) " {{{
   endif
 
   let l:build_system = build#get_current_build_system()
-  if !empty(l:build_system)
-    let l:command = s:get_buildsys_item(l:build_system.name, 'command')
-    call s:run_in_env(l:build_system.path, l:command . (a:0? ' ' . a:1 : ''))
-    return
-  endif
 
   if !strlen(expand('%:t'))
     return s:log('Current file has no name')
   endif
 
   if a:0 == 0
-    let l:target = 'build'
+    let l:subcmd = 'build'
     let l:extra_args = ''
   else
     let l:split_args = matchlist(a:1, '\v^\s*(\S*)\s*(.*)$')
-    let l:target = l:split_args[1]
+    let l:subcmd = l:split_args[1]
     let l:extra_args = l:split_args[2]
   endif
 
-  let l:commands = s:gather_fallback_targets(&filetype)
+  let l:commands = s:gather_commands(l:build_system)
   if empty(l:commands)
-    call s:log('Current file does not belong to any known build system')
-    call s:log('No fallback commands defined for filetype "' . &filetype . '"')
+    if l:build_system.fallback
+      call s:log('Current file does not belong to any known build system')
+      call s:log('No fallback commands defined for filetype "' . &filetype . '"')
+    else
+      call s:log('The build system "'.l:build_system.name.'" does not have any commands defined.')
+    endif
     return
   endif
 
-  if !has_key(l:commands, l:target)
-    call s:log('Current file does not belong to any known build system')
-    call s:log('Fallback target "' . l:target . '" is not defined for the filetype "'
-      \ . &filetype . '"')
+  if !has_key(l:commands, l:subcmd)
+    if l:build_system.fallback
+      call s:log('Current file does not belong to any known build system')
+      call s:log('Command "' . l:subcmd . '" is not defined for the filetype "'
+        \ . &filetype . '"')
+    else
+      call s:log('Command "' . l:subcmd . '" is not defined for the build system "'
+        \ . l:build_system.name . '"')
+    endif
     echo "\n"
     echo 'Commands available for this file:'
-    call s:print_fallback_examples(l:commands)
+    call s:print_command_examples(l:commands, l:build_system)
     return
   endif
 
-  call s:build_lang_target(l:commands[l:target], l:extra_args)
+  call s:run_command(l:commands[l:subcmd], l:extra_args, l:build_system)
 endfunction " }}}
 
 " Print build informations about the current file.
 function! build#info() " {{{
   let l:build_system = build#get_current_build_system()
+  let l:commands = s:gather_commands(l:build_system)
 
-  if !empty(l:build_system)
-    let l:command = s:get_buildsys_item(l:build_system.name, 'command')
-
+  if l:build_system.fallback
+    echo 'No fallback commands defined for filetype "' . &filetype . '".'
+    if empty(l:commands)
+      return
+    endif
+    echo 'Fallback commands are provided. See the examples below.'
+  else
     echo 'Build system:      ' . l:build_system.name
     echo 'Project directory: ' . l:build_system.path
-    echo '-'
-    echo 'Build command:     ' . l:command
-
-    let l:init_cmd = s:get_buildsys_item(l:build_system.name, 'init')
-    if !empty(l:init_cmd)
-      echo 'Init command:      ' . l:init_cmd
-    endif
-
-    echo '-'
-    return
   endif
 
-  echo 'The current file does not belong to any known build system.'
-
-  let l:commands = s:gather_fallback_targets(&filetype)
-  if empty(l:commands)
-    echo 'No fallback commands defined for filetype "' . &filetype . '".'
-    return
-  endif
-
-  echo 'Fallback commands are provided. See the examples below.'
   echo "\n"
   echo 'Usage:'
-  echo '  :Build [TARGET [args...]]'
+  echo '  :Build [SUBCMD [args...]]'
   echo "\n"
   echo 'Examples:'
-  call s:print_fallback_examples(l:commands)
+  call s:print_command_examples(l:commands, l:build_system)
 endfunction " }}}
