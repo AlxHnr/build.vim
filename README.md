@@ -2,9 +2,10 @@ This plugin provides commands for using the build system to which the
 current file belongs. It searches from each files directory upwards for
 Makefiles and the like. These commands are provided:
 
-* **:Build** - Build/run a target
+* **:Build** - General purpose command for common tasks (build, run, clean...)
 * **:BuildInit** - Initialize/configure a build
 * **:BuildInfo** - Print build informations for the current file
+* **:BuildRefresh** - Force a fresh discovery of build system
 
 **Note**: If the current file does not belong to any known build systems,
 it will be build using associated compilers. E.g. C files will be build
@@ -33,10 +34,11 @@ The `:Build` command runs `make` inside the build directory. It takes
 optional arguments which will be passed directly to `make`:
 
 ```vim
-:Build
-:Build all
-:Build test
-:Build clean
+:Build " equivalent to :Build build
+:Build build all " build the make target all
+:Build build test " build the make target test
+:Build clean " clean the directory
+:Build run " run the current file or the whole project depending on the build system
 ```
 
 ### CMake with subdirectories
@@ -93,16 +95,14 @@ Then run `make` using the `:Build` command:
 
 ```vim
 :Build
-:Build test
 :Build clean
-:Build -j8 --keep-going --dry-run
+:Build build -j8 --keep-going --dry-run
 ```
 
 ## Plain C files
 
 If the current file does not belong to a build system, it can be compiled
-using the `:Build` command. This plugin defines three build targets for C
-files:
+using the `:Build` command. This plugin defines three subcommands for C files:
 
 ```vim
 :Build build
@@ -122,6 +122,13 @@ Pass custom arguments to the compiler:
 
 For some files which don't belong to a build system, the `run` target will
 be defined:
+It relies on the capacity of the system to directly run those files directly, which imply that you should define a shebang at the begining of the
+file.
+
+For example for python
+```python
+#!/usr/bin/env python3
+```
 
 ```vim
 :Build run
