@@ -4,6 +4,8 @@ else
   let s:jobs = 1
 endif
 
+let s:current_build_system = {}
+
 " Informations about various builds systems. {{{
 let s:build_systems =
   \ {
@@ -379,18 +381,27 @@ endfunction " }}}
 " Returns a dictionary containing informations about the current build
 " system. If no build system could be found, a fallback build system
 " based on file type is proposed
+" The result is stored on the first call and the research will not be done
+" again. To force the research to be refreshed, provide v:true as an optional
+" argument.
 "
 " Example: When run in a buffer containing /some/path/CMakeLists.txt
+"   build#get_current_build_system()
 " Result:
 " {
 "   'name': 'CMake',
 "   'path': '/some/path',
 "   'fallback': v:false,
 " }
-function! build#get_current_build_system() " {{{
+function! build#get_current_build_system(...) " {{{
+  if !empty(s:current_build_system) && (a:0 == 0 || !a:1)
+    return s:current_build_system
+  end
+
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
-    return {'name': &filetype, 'fallback': v:true, 'path': '.'}
+    let s:current_build_system = {'name': &filetype, 'fallback': v:true, 'path': '.'}
+    return s:current_build_system
   endif
 
   let l:known_systems = s:get_list_of_known_build_system_names()
@@ -400,11 +411,12 @@ function! build#get_current_build_system() " {{{
   if stridx(l:current_path, getcwd()) == 0
     let l:build_system_name = s:get_first_build_system_in_dir(getcwd(), l:known_systems)
     if !empty(l:build_system_name)
-      return {
+      let s:current_build_system = {
         \ 'name': l:build_system_name,
         \ 'path': getcwd(),
         \ 'fallback': v:false,
         \ }
+      return s:current_build_system
     endif
   endif
 
@@ -414,14 +426,16 @@ function! build#get_current_build_system() " {{{
     let l:current_path = fnamemodify(l:current_path, ':h')
     let l:build_system_name = s:get_first_build_system_in_dir(l:current_path, l:known_systems)
     if !empty(l:build_system_name)
-      return {
+      let s:current_build_system = {
         \ 'name': l:build_system_name,
         \ 'path': l:current_path,
         \ 'fallback': v:false,
         \ }
+      return s:current_build_system
     endif
   endwhile
-  return {'name': &filetype, 'fallback': v:true, 'path': '.'}
+  let s:current_build_system = {'name': &filetype, 'fallback': v:true, 'path': '.'}
+  return s:current_build_system
 endfunction " }}}
 
 " Try to initialize the init system to which the current file belongs. Takes one optional string
