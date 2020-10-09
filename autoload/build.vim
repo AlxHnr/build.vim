@@ -4,8 +4,6 @@ else
   let s:jobs = 1
 endif
 
-let s:current_build_system = {}
-
 " Informations about various builds systems. {{{
 let s:build_systems =
   \ {
@@ -385,8 +383,7 @@ endfunction " }}}
 " system. If no build system could be found, a fallback build system
 " based on file type is proposed
 " The result is stored on the first call and the research will not be done
-" again. To force the research to be refreshed, provide v:true as an optional
-" argument.
+" again.
 "
 " Example: When run in a buffer containing /some/path/CMakeLists.txt
 "   build#get_current_build_system()
@@ -396,11 +393,7 @@ endfunction " }}}
 "   'path': '/some/path',
 "   'fallback': v:false,
 " }
-function! build#get_current_build_system(...) " {{{
-  if !empty(s:current_build_system) && (a:0 == 0 || !a:1)
-    return s:current_build_system
-  end
-
+function! build#get_current_build_system() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
     let s:current_build_system = {'name': &filetype, 'fallback': v:true, 'path': '.'}
