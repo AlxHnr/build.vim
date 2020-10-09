@@ -32,7 +32,6 @@ This plugin propose few commands:
 - `:BuildInit` initialize the build system if needed
 - `:BuildInfo` provide informations and help message on the current build
   system
-- `:BuildRefresh` force a fresh detection of the build system
 
 -------------------------------------------------------------------------------
 2.1 Common tasks                                                          *Build*
