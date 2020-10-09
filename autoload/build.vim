@@ -265,8 +265,7 @@ function! s:gather_commands(build_system) " {{{
       call extend(l:commands, g:build#languages[l:name])
     endif
   else
-    if has_key(s:build_systems, l:name)
-      \ && has_key(s:build_systems[l:name], 'commands')
+    if has_key(s:build_systems, l:name) && has_key(s:build_systems[l:name], 'commands')
       let l:commands = copy(s:build_systems[l:name].commands)
     endif
     if exists('g:build#systems')
@@ -307,12 +306,9 @@ endfunction " }}}
 "   "This is 'main.cpp'"
 function! s:prepare_cmd_for_shell(str, build_system) " {{{
   let l:str = a:str
-  let l:str = substitute(l:str, '%PATH%',
-        \ escape(shellescape(expand('%:p:h')), '\'), 'g')
-  let l:str = substitute(l:str, '%NAME%',
-        \ escape(shellescape(expand('%:t')), '\'),   'g')
-  let l:str = substitute(l:str, '%HEAD%',
-        \ escape(shellescape(expand('%:t:r')), '\'), 'g')
+  let l:str = substitute(l:str, '%PATH%', escape(shellescape(expand('%:p:h')), '\'), 'g')
+  let l:str = substitute(l:str, '%NAME%', escape(shellescape(expand('%:t')), '\'),   'g')
+  let l:str = substitute(l:str, '%HEAD%', escape(shellescape(expand('%:t:r')), '\'), 'g')
   if a:build_system.fallback
     let l:str = substitute(l:str, '%RELPATH%', '.', 'g')
   else
@@ -371,8 +367,7 @@ endfunction " }}}
 function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
   for l:build_name in a:build_system_names
     for l:build_file in split(s:get_buildsys_item(l:build_name, 'file'), ',')
-      if filereadable(a:dir . '/' . l:build_file)
-            \ || !empty(glob(a:dir . '/' . l:build_file))
+      if filereadable(a:dir . '/' . l:build_file) || !empty(glob(a:dir . '/' . l:build_file))
         return l:build_name
       endif
     endfor
@@ -561,8 +556,7 @@ function! build#target(...) " {{{
   if !has_key(l:commands, l:subcmd)
     if l:build_system.fallback
       call s:log('Current file does not belong to any known build system')
-      call s:log('Command "' . l:subcmd . '" is not defined for the filetype "'
-        \ . &filetype . '"')
+      call s:log('Command "' . l:subcmd . '" is not defined for the filetype "' . &filetype . '"')
     else
       call s:log('Command "' . l:subcmd . '" is not defined for the build system "'
         \ . l:build_system.name . '"')
