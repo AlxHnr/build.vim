@@ -183,15 +183,15 @@ can omit some of the common commands if they don't make sense in your case.
 Every command will be executed in the directory of the detected build file and can contain
 four different placeholders:
 
-                                                                         *%PATH%*
+                                                                   *build_%PATH%*
 %PATH% - Shell-escaped absolute path to the directory containing the current
 file.
-                                                                      *%RELPATH%*
+                                                                *build_%RELPATH%*
 %RELPATH% - Shell-escaped relative path from the directory of the build file
 to the directory of the current file
-                                                                         *%NAME%*
+                                                                   *build_%NAME%*
 %NAME% - Shell-escaped filename with its extension.
-                                                                         *%HEAD%*
+                                                                   *build_%HEAD%*
 %HEAD% - Shell-escaped filename without its extension.
 
 -------------------------------------------------------------------------------
