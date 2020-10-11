@@ -165,7 +165,7 @@ New build systems can be added to |g:build#systems|:
   \       'init' : 'mkdir .foomake_cache',
   \       'build': 'foomake build',
   \       'clean': 'foomake wipe',
-  \       'run'  : 'foomake cmd',
+  \       'run'  : 'foomake cmd ./%HEAD%',
   \       'bar'  : 'foomake bar', " an uncommon command
   \     },
   \   },
