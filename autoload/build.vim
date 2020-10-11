@@ -527,10 +527,8 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
-  if l:subcmd ==# 'help'
-    return s:help_message(l:build_system)
-  elseif l:subcmd ==# 'info'
-    return s:info_message(l:build_system)
+  if l:subcmd ==# 'info'
+    return build#info()
   endif
 
   let l:commands = s:gather_commands(l:build_system)
