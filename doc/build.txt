@@ -156,6 +156,7 @@ You can omit some of the common commands if they don't make sense in your case.
 Every command will be executed in the directory of the detected build file and can contain
 four different placeholders:
 
+                                                                   *placeholders*
                                                                    *build_%PATH%*
 %PATH% - Shell-escaped absolute path to the directory containing the current
 file.
@@ -184,7 +185,7 @@ create a dictionary named |g:build#languages|. Here is an example:
     \ }
 <
 Every command will be executed in the directory of the current file and can
-contain the same placeholders. In this case %RELPATH% always expand to `'.'`.
+contain the same |placeholders|. In this case %RELPATH% always expand to `'.'`.
 
 ===============================================================================
 5. License                                                        *build-license*
