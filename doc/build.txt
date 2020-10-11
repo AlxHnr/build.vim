@@ -4,9 +4,6 @@ CONTENTS                                                         *build-contents
 
   1. Description..............................................|build-description|
   2. Commands....................................................|build-commands|
-    2.1 Common tasks......................................................|Build|
-    2.2 Initialize the current project................................|BuildInit|
-    2.3 Print build informations for the current file.................|BuildInfo|
   3. Functions..................................................|build-functions|
     3.1 Get current build system...............|build#get_current_build_system()|
   4. Options......................................................|build-options|
@@ -26,15 +23,13 @@ the underlying build system (or its absence).
 
 ===============================================================================
 2. Commands                                                      *build-commands*
+                                                                          *Build*
 
 This plugin propose few commands:
 - `:Build` a general purpose command used to achieve common tasks
 - `:BuildInit` initialize the build system if needed
 - `:BuildInfo` provide informations and help message on the current build
   system
-
--------------------------------------------------------------------------------
-2.1 Common tasks                                                          *Build*
 
 The `:Build` command takes either no arguments or a first argument called a
 subcommand and any number of other arguments as you would pass them to a shell
@@ -89,31 +84,6 @@ If the detected build system was `Dune`, those would result in:
    3) dune clean
    4) dune runtest
 <
-
--------------------------------------------------------------------------------
-2.2 Initialize the current project                                    *BuildInit*
-
-`:BuildInit` does the same thing as `:Build init`.
-It try to initialize the init system to which the current file belongs. Takes
-optional arguments which will be passed to the build systems init command.
-
-Examples:
->
-  1) :BuildInit
-  2) :BuildInit --enable-gtk --cflags="-O2 -Wall"
-<
-If the current file belongs to an autotools project, it will run the following
-commands:
->
-  1) ./configure
-  2) ./configure --enable-gtk --cflags="-O2 -Wall"
-<
--------------------------------------------------------------------------------
-2.3 Print build informations for the current file                     *BuildInfo*
-
-Show build commands and other informations related to building the current
-file.
-In effect do the same as `:Build info` and `:Build help`.
 
 ===============================================================================
 3. Functions                                                    *build-functions*
