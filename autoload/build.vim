@@ -39,7 +39,7 @@ let s:build_systems =
   \     {
   \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
   \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \        'clean' : 'rm -r build',
+  \        'clean' : 'cmake --build ./build/ -- clean',
   \        'init'  : 'ln -sf build/compile_commands.json'
   \                . ' && mkdir -p build/'
   \                . ' && cd build/'
