@@ -44,7 +44,7 @@ let s:build_systems =
   \                . ' && mkdir -p build/'
   \                . ' && cd build/'
   \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-  \        'run'   : './build/%HEAD%',
+  \        'run'   : 'cmake --build ./build/ -- run',
   \        'test' : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
   \     },
   \   },
