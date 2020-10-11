@@ -200,10 +200,10 @@ endfunction " }}}
 " if dest or start are relative path, they are taken
 " relative to the current working directory
 " Example:
-"   " current working directory is /a/b/c
-"   s:relative_to('/a/b/d/e/f/g', '../d/e')
+"   " current working directory is /common_root/work_dir
+"   s:relative_to('/common_root/build_dir/path/to/file', '../build_dir/path')
 " Returns:
-"   'f/g'
+"   'to/file'
 function! s:relative_to(dest, start) " {{{
   " make sure both path are absolute
   let l:dest = fnamemodify(a:dest, ':p')
