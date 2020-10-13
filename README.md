@@ -1,11 +1,7 @@
 This plugin provides commands for using the build system to which the
 current file belongs. It searches from each files directory upwards for
-Makefiles and the like. These commands are provided:
-
-* **:Build** - General purpose command for common tasks (build, run, clean...)
-* **:BuildInit** - Initialize/configure a build
-* **:BuildInfo** - Print build informations for the current file
-* **:BuildRefresh** - Force a fresh discovery of build system
+Makefiles and the like.
+A general purpose **:Build** command cover for common tasks (build, run, clean...).
 
 **Note**: If the current file does not belong to any known build systems,
 it will be build using associated compilers. E.g. C files will be build
@@ -27,7 +23,7 @@ Open any file in the project and use the following command to initialize
 CMake. Optional arguments can be provided:
 
 ```vim
-:BuildInit -DCMAKE_BUILD_TYPE=Release
+:Build init -DCMAKE_BUILD_TYPE=Release
 ```
 
 The `:Build` command runs `make` inside the build directory. It takes
@@ -35,9 +31,9 @@ optional arguments which will be passed directly to `make`:
 
 ```vim
 :Build " equivalent to :Build build, build the default target
-:Build build all " build the all target
+:Build build all
 :Build test " run the tests
-:Build clean " clean the directory
+:Build clea
 :Build run " run the current file or the whole project depending on the build system
 ```
 
@@ -62,7 +58,7 @@ as in the previous example:
 
 ```vim
 :lchdir ~/path/to/project
-:BuildInit -DCMAKE_BUILD_TYPE=Release
+:Build init -DCMAKE_BUILD_TYPE=Release
 :Build
 ```
 
@@ -88,7 +84,7 @@ Open any file in the project and configure the build using the following
 command. Optional configure flags can be provided:
 
 ```vim
-:BuildInit --enable-gtk --without-foo --prefix="$HOME/.local"
+:Build init --enable-gtk --without-foo --prefix="$HOME/.local"
 ```
 
 Then run `make` using the `:Build` command:
@@ -122,14 +118,15 @@ Pass custom arguments to the compiler:
 
 For some files which don't belong to a build system, the `run` target will
 be defined:
-It relies on the capacity of the system to directly run those files directly, which imply that you should define a shebang at the begining of the
+
+```vim
+:Build run
+```
+
+It relies on the capacity of the system to directly run those files directly, which implies that you should define a shebang at the begining of the
 file.
 
 For example for python
 ```python
 #!/usr/bin/env python3
-```
-
-```vim
-:Build run
 ```

@@ -44,7 +44,7 @@ let s:build_systems =
   \                . ' && mkdir -p build/'
   \                . ' && cd build/'
   \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-  \        'run'   : './build/%HEAD%',
+  \        'run'   : 'cmake --build ./build/ -- run',
   \        'test' : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
   \     },
   \   },
@@ -90,7 +90,7 @@ let s:build_systems =
   \     'commands' :
   \     {
   \        'do'    : 'mvn',
-  \        'build' : 'mvn build',
+  \        'build' : 'mvn compile',
   \        'clean' : 'mvn clean',
   \        'test'  : 'mvn test',
   \     }
@@ -195,23 +195,21 @@ endfunction " }}}
 " if dest or start are relative path, they are taken
 " relative to the current working directory
 " Example:
-"   " current working directory is /a/b/c
-"   s:relative_to('/a/b/d/e/f/g', '../d/e')
+"   " current working directory is /common_root/work_dir
+"   s:relative_to('/common_root/build_dir/path/to/file', '../build_dir/path')
 " Returns:
-"   'f/g'
+"   'to/file'
 function! s:relative_to(dest, start) " {{{
   " make sure both path are absolute
   let l:dest = fnamemodify(a:dest, ':p')
   let l:start = fnamemodify(a:start, ':p')
 
-  let l:initial_wd = getcwd()
-
   " move to the starting directory
-  exec 'lcd '.l:start
+  execute 'lchdir '.l:start
   " expand the destination into a relative path to cwd
   let l:dest = fnamemodify(l:dest, ':.')
   " move back to were we started
-  exec 'lcd '.l:initial_wd
+  lchdir -
   return l:dest
 endfunction " }}}
 
@@ -240,7 +238,7 @@ endfunction " }}}
 " build system. Will return an empty dictionary if nothing is found.
 " If the build_system is not a fallback, both g:build#systems and
 " s:build#systems are considered, the former overwriting the latter.
-" It the build_system is a fallback, both g:build#languages and s:language_cmds
+" If the build_system is a fallback, both g:build#languages and s:language_cmds
 " are considered.
 "
 " Example:
@@ -320,8 +318,9 @@ endfunction " }}}
 " Run the command with eventual arguments at the location of the build_system
 function! s:run_command(cmd, extra_args, build_system) " {{{
   let l:path = a:build_system.fallback? expand('%:p:h') : a:build_system.path
-  let l:command = s:prepare_cmd_for_shell(a:cmd, a:build_system)
-        \ . (empty(a:extra_args)? '' : ' ' . a:extra_args)
+  let l:command = s:prepare_cmd_for_shell(a:cmd.(empty(a:extra_args)? '' : ' ' . a:extra_args),
+        \ a:build_system)
+
   call s:run_in_env(l:path, l:command)
 endfunction " }}}
 
@@ -377,8 +376,6 @@ endfunction " }}}
 " Returns a dictionary containing informations about the current build
 " system. If no build system could be found, a fallback build system
 " based on file type is proposed
-" The result is stored on the first call and the research will not be done
-" again.
 "
 " Example: When run in a buffer containing /some/path/CMakeLists.txt
 "   build#get_current_build_system()
@@ -391,8 +388,7 @@ endfunction " }}}
 function! build#get_current_build_system() " {{{
   let l:current_path = expand('%:p')
   if !strlen(l:current_path)
-    let s:current_build_system = {'name': &filetype, 'fallback': v:true, 'path': '.'}
-    return s:current_build_system
+    return {'name': &filetype, 'fallback': v:true, 'path': '.'}
   endif
 
   let l:known_systems = s:get_list_of_known_build_system_names()
@@ -402,12 +398,11 @@ function! build#get_current_build_system() " {{{
   if stridx(l:current_path, getcwd()) == 0
     let l:build_system_name = s:get_first_build_system_in_dir(getcwd(), l:known_systems)
     if !empty(l:build_system_name)
-      let s:current_build_system = {
+      return {
         \ 'name': l:build_system_name,
         \ 'path': getcwd(),
         \ 'fallback': v:false,
         \ }
-      return s:current_build_system
     endif
   endif
 
@@ -417,16 +412,14 @@ function! build#get_current_build_system() " {{{
     let l:current_path = fnamemodify(l:current_path, ':h')
     let l:build_system_name = s:get_first_build_system_in_dir(l:current_path, l:known_systems)
     if !empty(l:build_system_name)
-      let s:current_build_system = {
+      return {
         \ 'name': l:build_system_name,
         \ 'path': l:current_path,
         \ 'fallback': v:false,
         \ }
-      return s:current_build_system
     endif
   endwhile
-  let s:current_build_system = {'name': &filetype, 'fallback': v:true, 'path': '.'}
-  return s:current_build_system
+  return {'name': &filetype, 'fallback': v:true, 'path': '.'}
 endfunction " }}}
 
 " Try to initialize the init system to which the current file belongs. Takes one optional string
@@ -529,10 +522,8 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
-  if l:subcmd ==# 'help'
-    return s:help_message(l:build_system)
-  elseif l:subcmd ==# 'info'
-    return s:info_message(l:build_system)
+  if l:subcmd ==# 'info'
+    return build#info()
   endif
 
   let l:commands = s:gather_commands(l:build_system)
