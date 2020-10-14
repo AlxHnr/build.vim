@@ -25,12 +25,6 @@ the underlying build system (or its absence).
 2. Commands                                                      *build-commands*
                                                                           *Build*
 
-This plugin propose few commands:
-- `:Build` a general purpose command used to achieve common tasks
-- `:BuildInit` initialize the build system if needed
-- `:BuildInfo` provide informations and help message on the current build
-  system
-
 The `:Build` command takes either no arguments or a first argument called a
 subcommand and any number of other arguments as you would pass them to a shell
 command.
@@ -40,7 +34,7 @@ independently from how each works.
 
 For example `:Build clean` on a `Make` based project would expand to
 `make clean` while for a `CMake` based project it would result in
-`rm -r build/`
+`cmake --build ./build -- clean`
 
 Common subcommands are:
 - `help` lists available subcommands, providing exemples of resulting  *Build_help*
