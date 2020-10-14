@@ -153,7 +153,7 @@ can omit some of the common commands if they don't make sense in your case.
 Every command will be executed in the directory of the detected build file and can contain
 four different placeholders:
 
-                                                                   *placeholders*
+                                                             *build_placeholders*
                                                                    *build_%PATH%*
 %PATH% - Shell-escaped absolute path to the directory containing the current
 file.
