@@ -33,7 +33,7 @@ optional arguments which will be passed directly to `make`:
 :Build " equivalent to :Build build, build the default target
 :Build build all
 :Build test " run the tests
-:Build clea
+:Build clean
 :Build run " run the current file or the whole project depending on the build system
 ```
 
