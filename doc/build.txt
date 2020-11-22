@@ -122,7 +122,7 @@ New build systems can be added to |g:build#systems|:
   \ {
   \   'my-build-system':
   \   {
-  \     'file'    : 'foo.json',
+  \     'file'    : 'foo.json,Foo.json,*.foobuild',
   \     'command' : 'foomake',
   \     'init'    : './configure',
   \   },
@@ -130,10 +130,10 @@ New build systems can be added to |g:build#systems|:
 <
 Every build system must have a name, a file entry and a command entry.
 The file entry contains a comma-separated list of filenames, describing the
-build files to search for. The command entry contains the command for
-running the build system. It will be run in the directory containing the
-build file. The init entry is optional and contains the command for
-initializing the build.
+build files to search for. It can contain wildcards. See |globpath()|. The
+command entry contains the command for running the build system. It will be
+run in the directory containing the build file. The init entry is optional and
+contains the command for initializing the build.
 
 -------------------------------------------------------------------------------
 4.2 Define single file build commands                         *g:build#languages*

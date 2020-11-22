@@ -262,7 +262,7 @@ endfunction " }}}
 function! s:get_first_build_system_in_dir(dir, build_system_names) " {{{
   for l:build_name in a:build_system_names
     for l:build_file in split(s:get_buildsys_item(l:build_name, 'file'), ',')
-      if filereadable(a:dir . '/' . l:build_file)
+      if !empty(globpath(a:dir, l:build_file))
         return l:build_name
       endif
     endfor
