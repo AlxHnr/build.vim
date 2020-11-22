@@ -448,16 +448,8 @@ function! build#init(...) " {{{
   endif
 endfunction " }}}
 
-" Print usage examples for the given commands.
-function! s:print_command_examples(commands, build_system) " {{{
-  for [l:subcmd, l:command] in items(a:commands)
-    echo '  :Build ' . l:subcmd . ' [args...]'
-    echo '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system) . ' [args...]'
-  endfor
-endfunction " }}}
-
-" Print an info message for the given build system
-function! s:info_message(build_system)
+" Print a help message for the given build system.
+function! s:help_message(build_system)
   let l:commands = s:gather_commands(a:build_system)
 
   if a:build_system.fallback
@@ -471,16 +463,17 @@ function! s:info_message(build_system)
     echo 'Build system:      ' . a:build_system.name
     echo 'Project directory: ' . a:build_system.path
   endif
-endfunction
 
-" Print a help message for the given build system
-function! s:help_message(build_system)
-  let l:commands = s:gather_commands(a:build_system)
+  echo "\n"
   echo 'Usage:'
   echo '  :Build [SUBCMD [args...]]'
   echo "\n"
   echo 'Examples:'
-  call s:print_command_examples(l:commands, a:build_system)
+
+  for [l:subcmd, l:command] in items(l:commands)
+    echo '  :Build ' . l:subcmd . ' [args...]'
+    echo '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system) . ' [args...]'
+  endfor
 endfunction
 
 " Run the provided subcommand. If no argument is provided, the default
@@ -528,10 +521,6 @@ function! build#target(...) " {{{
     let l:extra_args = l:split_args[2]
   endif
 
-  if l:subcmd ==# 'info'
-    return build#info()
-  endif
-
   let l:commands = s:gather_commands(l:build_system)
   if empty(l:commands)
     if l:build_system.fallback
@@ -557,12 +546,4 @@ function! build#target(...) " {{{
   endif
 
   call s:run_command(l:commands[l:subcmd], l:extra_args, l:build_system)
-endfunction " }}}
-
-" Print build informations about the current file.
-function! build#info() " {{{
-  let l:build_system = build#get_current_build_system()
-  call s:info_message(l:build_system)
-  echo "\n"
-  call s:help_message(l:build_system)
 endfunction " }}}
