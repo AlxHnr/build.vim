@@ -1,7 +1,6 @@
 This plugin provides commands for using the build system to which the
 current file belongs. It searches from each files directory upwards for
 Makefiles and the like.
-A general purpose **:Build** command cover for common tasks (build, run, clean...).
 
 **Note**: If the current file does not belong to any known build systems,
 it will be build using associated compilers. E.g. C files will be build
@@ -30,12 +29,13 @@ The `:Build` command runs `make` inside the build directory. It takes
 optional arguments which will be passed directly to `make`:
 
 ```vim
-:Build " equivalent to :Build build, build the default target
+:Build build -j20
 :Build build all
-:Build test " run the tests
+:Build test
 :Build clean
-:Build run " run the current file or the whole project depending on the build system
 ```
+
+**Note**: Running `:Build` without any arguments is equivalent to `:Build build`.
 
 ### CMake with subdirectories
 
@@ -121,12 +121,4 @@ be defined:
 
 ```vim
 :Build run
-```
-
-It relies on the capacity of the system to directly run those files directly, which implies that you should define a shebang at the begining of the
-file.
-
-For example for python
-```python
-#!/usr/bin/env python3
 ```

@@ -12,12 +12,12 @@ let s:build_systems =
   \     'file'     : 'configure',
   \     'commands' :
   \     {
+  \        'init'  : './configure',
   \        'do'    : 'make --jobs=' . s:jobs,
   \        'build' : 'make --jobs=' . s:jobs,
-  \        'clean' : 'make --jobs=' . s:jobs . ' clean',
-  \        'init'  : './configure',
-  \        'run'   : './%RELPATH%/%HEAD%',
-  \        'test' : 'make --jobs=' . s:jobs . ' test',
+  \        'clean' : 'make clean',
+  \        'run'   : 'make --jobs=' . s:jobs . ' run',
+  \        'test'  : 'make --jobs=' . s:jobs . ' test',
   \     }
   \   },
   \   'Cargo':
@@ -37,15 +37,15 @@ let s:build_systems =
   \     'file'     : 'CMakeLists.txt',
   \     'commands' :
   \     {
-  \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \        'clean' : 'cmake --build ./build/ -- clean',
   \        'init'  : 'ln -sf build/compile_commands.json'
   \                . ' && mkdir -p build/'
   \                . ' && cd build/'
   \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-  \        'run'   : 'cmake --build ./build/ -- run',
-  \        'test' : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
+  \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
+  \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
+  \        'clean' : 'cmake --build ./build/ -- clean',
+  \        'run'   : 'cmake --build ./build/ -- -j ' . s:jobs . ' run',
+  \        'test'  : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
   \     },
   \   },
   \   'DUB':
@@ -79,8 +79,8 @@ let s:build_systems =
   \     {
   \        'do'    : 'make --jobs=' . s:jobs,
   \        'build' : 'make --jobs=' . s:jobs,
-  \        'clean' : 'make --jobs=' . s:jobs . ' clean',
-  \        'run'   : './%RELPATH%/%HEAD%',
+  \        'clean' : 'make clean',
+  \        'run'   : 'make --jobs=' . s:jobs . ' run',
   \        'test'  : 'make --jobs=' . s:jobs . ' test',
   \     }
   \   },
@@ -196,9 +196,9 @@ function! s:log_err(message) " {{{
   echoerr 'build.vim: ' . a:message . '.'
 endfunction " }}}
 
-" Return the path dest relative to the path start
-" if dest or start are relative path, they are taken
-" relative to the current working directory
+" Return the path 'dest' relative to the path 'start'. if dest or start are relative, they are
+" treated as relative to the current working directory
+"
 " Example:
 "   " current working directory is /common_root/work_dir
 "   s:relative_to('/common_root/build_dir/path/to/file', '../build_dir/path')
@@ -209,11 +209,8 @@ function! s:relative_to(dest, start) " {{{
   let l:dest = fnamemodify(a:dest, ':p')
   let l:start = fnamemodify(a:start, ':p')
 
-  " move to the starting directory
   execute 'lchdir '.l:start
-  " expand the destination into a relative path to cwd
   let l:dest = fnamemodify(l:dest, ':.')
-  " move back to were we started
   lchdir -
   return l:dest
 endfunction " }}}
@@ -301,8 +298,7 @@ endfunction " }}}
 " be appended to shell commands.
 "
 " Example:
-"   s:prepare_cmd_for_shell('This is %NAME%',
-"         \ {'fallback': v:true'})
+"   s:prepare_cmd_for_shell('This is %NAME%', {'fallback': v:true'})
 " Returns:
 "   "This is 'main.cpp'"
 function! s:prepare_cmd_for_shell(str, build_system) " {{{
@@ -314,13 +310,12 @@ function! s:prepare_cmd_for_shell(str, build_system) " {{{
     let l:str = substitute(l:str, '%RELPATH%', '.', 'g')
   else
     let l:str = substitute(l:str, '%RELPATH%',
-          \ escape(shellescape(s:relative_to(expand('%:p:h'), a:build_system.path)), '\'),
-          \ 'g')
+          \ escape(shellescape(s:relative_to(expand('%:p:h'), a:build_system.path)), '\'), 'g')
   endif
   return l:str
 endfunction " }}}
 
-" Run the command with eventual arguments at the location of the build_system
+" Run the command with the given arguments from inside the build systems directory.
 function! s:run_command(cmd, extra_args, build_system) " {{{
   let l:path = a:build_system.fallback? expand('%:p:h') : a:build_system.path
   let l:command = s:prepare_cmd_for_shell(a:cmd.(empty(a:extra_args)? '' : ' ' . a:extra_args),
