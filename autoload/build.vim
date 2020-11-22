@@ -42,6 +42,11 @@ let s:build_systems =
   \     'file'    : 'pom.xml',
   \     'command' : 'mvn',
   \   },
+  \   'Nimble':
+  \   {
+  \     'file'    : '*.nimble',
+  \     'command' : 'nimble',
+  \   },
   \ }
 " }}}
 
