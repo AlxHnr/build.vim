@@ -455,10 +455,10 @@ function! s:help_message(build_system)
   if a:build_system.fallback
     call s:log('Current file does not belong to any known build system')
     if empty(l:commands)
-      echo 'No fallback commands defined for filetype "' . &filetype . '".'
+      call s:log('No fallback commands defined for filetype "' . &filetype . '"')
       return
     endif
-    echo 'Fallback commands are provided. See the examples below.'
+    call s:log('Fallback commands are provided. See the examples below')
   else
     echo 'Build system:      ' . a:build_system.name
     echo 'Project directory: ' . a:build_system.path
@@ -523,26 +523,12 @@ function! build#target(...) " {{{
 
   let l:commands = s:gather_commands(l:build_system)
   if empty(l:commands)
-    if l:build_system.fallback
-      call s:log('Current file does not belong to any known build system')
-      call s:log('No fallback commands defined for filetype "' . &filetype . '"')
-    else
-      call s:log('The build system "'.l:build_system.name.'" does not have any commands defined')
-    endif
-    return
+    return s:help_message(l:build_system)
   endif
-
   if !has_key(l:commands, l:subcmd)
-    if l:build_system.fallback
-      call s:log('Current file does not belong to any known build system')
-      call s:log('Command "' . l:subcmd . '" is not defined for the filetype "' . &filetype . '"')
-    else
-      call s:log('Command "' . l:subcmd . '" is not defined for the build system "'
-        \ . l:build_system.name . '"')
-    endif
+    call s:log('Subcommand not defined for current filetype: "' . l:subcmd . '"')
     echo "\n"
-    call s:help_message(l:build_system)
-    return
+    return s:help_message(l:build_system)
   endif
 
   call s:run_command(l:commands[l:subcmd], l:extra_args, l:build_system)
