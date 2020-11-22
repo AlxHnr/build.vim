@@ -98,7 +98,13 @@ let s:build_systems =
   \   'Nimble':
   \   {
   \     'file'    : '*.nimble',
-  \     'command' : 'nimble',
+  \     'commands' :
+  \     {
+  \        'do'    : 'nimble',
+  \        'build' : 'nimble build',
+  \        'test'  : 'nimble test',
+  \        'run'   : 'nimble run',
+  \     }
   \   },
   \ }
 " }}}
@@ -532,7 +538,7 @@ function! build#target(...) " {{{
       call s:log('Current file does not belong to any known build system')
       call s:log('No fallback commands defined for filetype "' . &filetype . '"')
     else
-      call s:log('The build system "'.l:build_system.name.'" does not have any commands defined.')
+      call s:log('The build system "'.l:build_system.name.'" does not have any commands defined')
     endif
     return
   endif
