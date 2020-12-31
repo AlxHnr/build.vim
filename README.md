@@ -60,6 +60,7 @@ as in the previous example:
 :lchdir ~/path/to/project
 :Build init -DCMAKE_BUILD_TYPE=Release
 :Build
+:Build --target my_target
 ```
 
 **Note**: You can use [this plugin](https://github.com/AlxHnr/project-chdir.vim) to set the working

@@ -41,11 +41,11 @@ let s:build_systems =
   \                . ' && mkdir -p build/'
   \                . ' && cd build/'
   \                . ' && cmake ../ -DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-  \        'do'    : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \        'build' : 'cmake --build ./build/ -- -j ' . s:jobs,
-  \        'clean' : 'cmake --build ./build/ -- clean',
-  \        'run'   : 'cmake --build ./build/ -- -j ' . s:jobs . ' run',
-  \        'test'  : 'cmake --build ./build/ -- -j ' . s:jobs . ' test',
+  \        'do'    : 'cmake --build ./build/ --parallel ' . s:jobs,
+  \        'build' : 'cmake --build ./build/ --parallel ' . s:jobs,
+  \        'clean' : 'cmake --build ./build/ --target clean',
+  \        'run'   : 'cmake --build ./build/ --parallel ' . s:jobs . ' --target run',
+  \        'test'  : 'cmake --build ./build/ --parallel ' . s:jobs . ' --target test',
   \     },
   \   },
   \   'DUB':
