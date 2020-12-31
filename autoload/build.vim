@@ -428,26 +428,6 @@ function! build#get_current_build_system() " {{{
   return {'name': &filetype, 'fallback': v:true, 'path': '.'}
 endfunction " }}}
 
-" Try to initialize the init system to which the current file belongs. Takes one optional string
-" containing arguments to be passed to the build systems init command.
-"
-" Examples:
-"   1) call build#init()
-"   2) call build#init('--enable-gtk --cflags="-O2 -Wall"')
-"
-" If the current file belongs to an autotools project, it will run the following commands:
-"   1) ./configure
-"   2) ./configure --enable-gtk --cflags="-O2 -Wall"
-function! build#init(...) " {{{
-  if a:0 > 1
-    return s:log_err('build#init(): too many arguments. Takes 0 or 1 argument')
-  elseif a:0 ==# 1
-    return build#target('init ' . a:1)
-  else
-    return build#target('init')
-  endif
-endfunction " }}}
-
 " Print a help message for the given build system.
 function! s:help_message(build_system)
   let l:commands = s:gather_commands(a:build_system)
