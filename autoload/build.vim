@@ -106,6 +106,17 @@ let s:build_systems =
   \        'run'   : 'nimble run',
   \     }
   \   },
+  \   'npm':
+  \   {
+  \     'file'    : 'package.json',
+  \     'commands' :
+  \     {
+  \        'do'    : 'npm',
+  \        'build' : 'npm run-script build',
+  \        'test'  : 'npm test',
+  \        'run'   : 'npm start',
+  \     }
+  \   },
   \ }
 " }}}
 
