@@ -97,7 +97,7 @@ let s:build_systems =
   \   },
   \   'Nimble':
   \   {
-  \     'file'    : '*.nimble',
+  \     'file'     : '*.nimble',
   \     'commands' :
   \     {
   \        'do'    : 'nimble',
@@ -108,7 +108,7 @@ let s:build_systems =
   \   },
   \   'npm':
   \   {
-  \     'file'    : 'package.json',
+  \     'file'     : 'package.json',
   \     'commands' :
   \     {
   \        'do'    : 'npm',
