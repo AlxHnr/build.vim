@@ -111,10 +111,13 @@ let s:build_systems =
   \     'file'     : 'package.json',
   \     'commands' :
   \     {
-  \        'do'    : 'npm',
-  \        'build' : 'npm run-script build',
-  \        'test'  : 'npm test',
-  \        'run'   : 'npm start',
+  \        'do'     : 'npm',
+  \        'build'  : 'npm run-script build',
+  \        'test'   : 'npm test',
+  \        'run'    : 'npm start',
+  \        'install': 'npm install',
+  \        'update' : 'npm update',
+  \        'npx'    : 'npx',
   \     }
   \   },
   \ }
