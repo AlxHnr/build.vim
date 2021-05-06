@@ -19,18 +19,19 @@ Your project may look like this:
 ```
 
 Open any file in the project and use the following command to initialize
-CMake. Optional arguments can be provided:
+CMake. Optional arguments can be provided and will be passed directly to
+cmake:
 
 ```vim
 :Build init -DCMAKE_BUILD_TYPE=Release
 ```
 
-The `:Build` command runs `make` inside the build directory. It takes
-optional arguments which will be passed directly to `make`:
+Here are some examples for invoking cmake. Additional arguments will be
+passed directly to cmake:
 
 ```vim
-:Build build -j20
-:Build build all
+:Build build
+:Build build --target some_cmake_target
 :Build test
 :Build clean
 ```
