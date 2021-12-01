@@ -1,8 +1,13 @@
-if executable('nproc')
-  let s:jobs = systemlist('nproc')[0]
-else
-  let s:jobs = 1
-endif
+function! s:getCoreCount() " {{{
+  for l:command in [ 'nproc', 'sysctl -n hw.ncpu' ]
+    let l:command_output = systemlist(l:command)[0]
+    if v:shell_error == 0
+      return l:command_output
+    endif
+  endfor
+  return 1
+endfunction " }}}
+let s:jobs = s:getCoreCount()
 
 " Informations about various builds systems. {{{
 let s:build_systems =
