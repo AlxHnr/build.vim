@@ -212,13 +212,8 @@ unlet s:scripting_languages s:language
 " }}}
 
 " Logs the given message.
-function! s:log(message) " {{{
-  echo 'build.vim: ' . a:message . '.'
-endfunction " }}}
-"
-" Logs the given error message.
-function! s:log_err(message) " {{{
-  echoerr 'build.vim: ' . a:message . '.'
+function! s:make_log_message(message) " {{{
+  return 'build.vim: ' . a:message . "\n"
 endfunction " }}}
 
 " Return the path 'dest' relative to the path 'start'. if dest or start are relative, they are
@@ -367,7 +362,7 @@ function! s:get_list_of_known_build_system_names() " {{{
             \ && has_key(g:build#systems[l:bs_name], 'commands')
         call add(l:known_systems, l:bs_name)
       else
-        call s:log_err('build system "' . l:bs_name . '" is incomplete')
+        echoerr s:make_log_message('build system "' . l:bs_name . '" is incomplete')
         return {}
       endif
     endfor
@@ -448,31 +443,36 @@ function! build#get_current_build_system() " {{{
 endfunction " }}}
 
 " Print a help message for the given build system.
-function! s:help_message(build_system)
+function! s:make_help_message(build_system)
   let l:commands = s:gather_commands(a:build_system)
+  let l:log_message = ''
 
   if a:build_system.fallback
-    call s:log('Current file does not belong to any known build system')
+    let l:log_message .=
+      \ s:make_log_message('Current file does not belong to any known build system')
     if empty(l:commands)
-      call s:log('No fallback commands defined for filetype "' . &filetype . '"')
-      return
+      return l:log_message .
+        \ s:make_log_message('No fallback commands defined for filetype "' . &filetype . '"')
     endif
-    call s:log('Fallback commands are provided. See the examples below')
+    let l:log_message .=
+      \ s:make_log_message('Fallback commands are provided. See the examples below')
   else
-    echo 'Build system:      ' . a:build_system.name
-    echo 'Project directory: ' . a:build_system.path
+    let l:log_message .= "\nBuild system:      " . a:build_system.name . "\n"
+    let l:log_message .= 'Project directory: ' . a:build_system.path . "\n"
   endif
 
-  echo "\n"
-  echo 'Usage:'
-  echo '  :Build [SUBCMD [args...]]'
-  echo "\n"
-  echo 'Examples:'
+  let l:log_message .= "\n"
+  let l:log_message .= "Usage:\n"
+  let l:log_message .= "  :Build [SUBCMD [args...]]\n"
+  let l:log_message .= "\n"
+  let l:log_message .= "Examples:"
 
   for [l:subcmd, l:command] in items(l:commands)
-    echo '  :Build ' . l:subcmd . ' [args...]'
-    echo '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system) . ' [args...]'
+    let l:log_message .=  "\n  :Build " . l:subcmd . " [args...]\n"
+    let l:log_message .=  '      => ' . s:prepare_cmd_for_shell(l:command, a:build_system)
+      \ . ' [args...]'
   endfor
+  return l:log_message
 endfunction
 
 " Run the provided subcommand. If no argument is provided, the default
@@ -502,13 +502,15 @@ endfunction
 "   5) rm ./'foo'
 function! build#target(...) " {{{
   if a:0 > 1
-    return s:log_err('build#target(): too many arguments. Takes 0 or 1 argument')
+    echoerr s:make_log_message('build#target(): too many arguments. Takes 0 or 1 argument')
+    return
   endif
 
   let l:build_system = build#get_current_build_system()
 
   if !strlen(expand('%:t'))
-    return s:log('Current file has no name')
+    echo s:make_log_message('Current file has no name')
+    return
   endif
 
   if a:0 == 0
@@ -522,12 +524,13 @@ function! build#target(...) " {{{
 
   let l:commands = s:gather_commands(l:build_system)
   if empty(l:commands)
-    return s:help_message(l:build_system)
+    echo s:make_help_message(l:build_system)
+    return
   endif
   if !has_key(l:commands, l:subcmd)
-    call s:log('Subcommand not defined for current filetype: "' . l:subcmd . '"')
-    echo "\n"
-    return s:help_message(l:build_system)
+    echo s:make_log_message('Subcommand not defined for current filetype: "' . l:subcmd . '"')
+      \ . s:make_help_message(l:build_system)
+    return
   endif
 
   call s:run_command(l:commands[l:subcmd], l:extra_args, l:build_system)
