@@ -125,6 +125,18 @@ let s:build_systems =
   \        'npx'    : 'npx',
   \     }
   \   },
+  \   'Zig':
+  \   {
+  \     'file'     : 'build.zig',
+  \     'commands' :
+  \     {
+  \        'do'    : 'zig build',
+  \        'build' : 'zig build',
+  \        'clean' : 'rm -r ./zig-cache ./zig-out',
+  \        'test'  : 'zig build test',
+  \        'run'   : 'zig build run',
+  \     }
+  \   },
   \ }
 " }}}
 
@@ -196,6 +208,13 @@ let s:language_cmds =
   \     'clean'  : 'rm ./%HEAD%.{aux,log,nav,out,pdf,snm,toc}',
   \     'build'  : 'pdflatex -file-line-error -halt-on-error ./%NAME%',
   \     'run'    : 'xdg-open ./%HEAD%.pdf',
+  \   },
+  \   'zig':
+  \   {
+  \     'clean' : 'rm -r ./zig-cache ./%HEAD%',
+  \     'build' : 'zig build-exe ./%NAME%',
+  \     'test'  : 'zig test %NAME%',
+  \     'run'   : 'zig run %NAME%',
   \   },
   \ }
 
