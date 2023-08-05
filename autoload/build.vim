@@ -133,7 +133,7 @@ let s:build_systems =
   \        'do'    : 'zig build',
   \        'build' : 'zig build',
   \        'clean' : 'rm -r ./zig-cache ./zig-out',
-  \        'test'  : 'zig build test -fsummary',
+  \        'test'  : 'zig build test --summary all',
   \        'run'   : 'zig build run',
   \     }
   \   },
